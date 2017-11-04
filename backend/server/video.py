@@ -58,6 +58,8 @@ class Video:
                 new_frame = Frame(name, time_stamp)
                 self.frames.append(new_frame)
 
+    def ocr_frames(self) -> None:
+        """Performs OCR on each frame"""
         for frame in self.frames:
             frame.get_ocr_prediction()
 
@@ -98,38 +100,6 @@ class Video:
             start += 1
             end += 1
 
-    def update_relevant_frames_2(self) -> None:
-        """
-        Method which selects frames that represent a full chalkboard,
-        and populates the relevant_frames list with these frames
-
-        """
-
-        # Analyze each frame and store the frame with the most words
-        # While you're analyzing, check if this current frame has
-        # less than half the words of the max frame. At this stage,
-        # we can assume the board is being erased. And so, we select
-        # the previous maximum frame as a relevant frame.
-
-        max_words = -1
-        max_frame = None
-
-        for frame in self.frames:
-
-            words_in_frame = self._get_num_words(frame)
-
-            if words_in_frame > max_words:
-                max_words = words_in_frame
-                max_frame = frame
-
-            # current iterated frame has half the words
-            # of the max frame, so we count the last
-            # max frame as relevent, and restart
-            elif max_frame // 2 > words_in_frame:
-                self.relevant_frames.append(max_frame)
-                max_words = -1
-                max_frame = None
-
     def _get_num_words(self, frame: 'Frame') -> int:
         """
         A helper function which returns the number
@@ -141,16 +111,10 @@ class Video:
                 num_words += 1
         return num_words
 
-    def find_first_occurance(self, line: 'Line') -> Frame:
-        """
-        Return the first frame which contains this Line object
-
-        Return None if this Line object is not in any frames
-        """
-
-        first_frame = None
-        for frame in self.frames:
-            if line in frame.lines:
-                first_frame = frame
-
-        return first_frame
+    def parse_diagram(self):
+        """Parses out diagrams from best frames"""
+        for frame in self.relevant_frames:
+            image = cv2.imread(frame.picture_directory, 0)
+            cv2.imshow('image', image)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()

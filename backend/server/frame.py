@@ -41,14 +41,9 @@ class Frame:
         data.flush()
         data.close()
 
-        print(r.headers)
-        print(r.headers.keys())
-
         if 'Operation-Location' in r.headers:
-            print("Found")
             self.return_url = r.headers['Operation-Location']
         else:
-            print("not Found")
             self.return_url = None
 
     def update_stats(self) -> None:
@@ -64,8 +59,6 @@ class Frame:
                          headers={'Ocp-Apim-Subscription-Key': api_key})
 
         stats = json.loads(r.text)
-
-        print(r.text + ",")
 
         result = stats['recognitionResult']
         lines = result['lines']
