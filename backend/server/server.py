@@ -15,8 +15,10 @@ def new_video(url: str, name: str) -> str:
 def process_video(url, name) -> None:
     video = Video(url, name)
     video.download()
-    print('Downloaded')
     video.parse_frames()
+    video.ocr_frames()
+    video.update_relevant_frames()
+    video.parse_diagram()
 
 
 if __name__ == '__main__':

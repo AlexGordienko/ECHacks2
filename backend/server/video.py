@@ -58,6 +58,8 @@ class Video:
                 new_frame = Frame(name, time_stamp)
                 self.frames.append(new_frame)
 
+    def ocr_frames(self) -> None:
+        """Performs OCR on each frame"""
         for frame in self.frames:
             frame.get_ocr_prediction()
 
@@ -108,3 +110,11 @@ class Video:
             for _ in line.words:
                 num_words += 1
         return num_words
+
+    def parse_diagram(self):
+        """Parses out diagrams from best frames"""
+        for frame in self.relevant_frames:
+            image = cv2.imread(frame.picture_directory, 0)
+            cv2.imshow('image', image)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
