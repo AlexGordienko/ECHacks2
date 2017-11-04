@@ -79,7 +79,7 @@ class Frame:
             self.lines.append(Line(line['text'], bb, wl))
 
     def _make_bounding_box(self, coordinates: tuple()) -> tuple():
-        """Helper function to caluclate bounding box corrdiantes
+        """Helper function to calculate bounding box coordinates
 
         return format (x,y,width,height)
         """
