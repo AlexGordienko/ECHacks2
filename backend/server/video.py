@@ -1,7 +1,7 @@
 from pytube import YouTube
 import cv2
-import time
 from typing import List, Dict, Tuple
+
 
 class Video:
     """ Represents a uploaded youtube video
@@ -46,16 +46,18 @@ class Video:
             current_frame += 1
             # Go through every tenth frame
             if current_frame % 10 == 0:
-
                 # Save frame as JPEG file
                 cv2.imwrite(self.name + "frame%d.jpg" % current_frame, image)
 
                 # Get the name of this current frame
                 name = self.name + "frame%d.jpg"
-                time_stamp = (current_frame * self.fps)
+                secs = current_frame // self.fps
+                time_stamp = Timestamp(secs // 60, secs % 60)
                 new_frame = Frame(name, time_stamp)
-                new_frame.get_ocr_prediction()
                 self.frames.append(new_frame)
+
+                # TODO: Make this none blocking
+                new_frame.get_ocr_prediction()
 
 
 class Frame:
@@ -66,10 +68,10 @@ class Frame:
     lines: lines of text in the frame
     """
     picture_directory: str
-    time_stamp: time
-    lines: List[Line]
+    time_stamp: 'Timestamp'
+    lines: List['Line']
 
-    def __init__(self, picture_directory: str, time_stamp: time) -> None:
+    def __init__(self, picture_directory: str, time_stamp: 'Timestamp') -> None:
         self.picture_directory = picture_directory
         self.time_stamp = time_stamp
         self.lines = []
@@ -90,24 +92,14 @@ class Frame:
 
         """
         list_of_lines = stats["lines"]
-
         for line_stats in list_of_lines:
-            # text of this line
             line_text = line_stats["text"]
-
-            # get the list containing the line's bounding box position
             position_list = line_stats["boundingBox"]
-
-            # convert this into a tuple of (x, y, length, width) of the current line's BB
             bounding_box = (position_list[0], position_list[1], position_list[2] - position_list[0],
                             position_list[5] - position_list[1])
 
-            # create and fill a list of words of the current line
             list_of_words = []
-
-            # the words for this line
             words = line_stats["words"]
-
             for word_stats in words:
                 self._add_word(list_of_words, word_stats)
 
@@ -156,3 +148,21 @@ class Word:
     def __init__(self, text, box) -> None:
         self.text = text
         self.bounding_box = box
+
+
+class Timestamp:
+    """Timestamp object for a video
+
+    mins: minutes of the timestamp
+    sec: seconds of the timestamp"""
+    mins: int
+    sec: int
+
+    def __init__(self, mins: int, sec: int) -> None:
+        """Initialize the Timestamp"""
+        self.mins = mins
+        self.sec = sec
+
+    def __str__(self) -> str:
+        """Prints the timestamp"""
+        return str(self.mins)+ "m" + str(self.sec) + "s"
