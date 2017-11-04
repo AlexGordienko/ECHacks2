@@ -1,9 +1,7 @@
 from pytube import YouTube
 import cv2
-from typing import List, Dict
-import requests
-import json
-import threading
+from backend.server.timestamp import Timestamp
+from backend.server.frame import Frame
 
 
 class Video:
@@ -101,121 +99,9 @@ class Video:
         """
         A helper function which returns the number
         of words in a frame
-
         """
         num_words = 0
         for line in frame.lines:
-            for word in line.words:
+            for _ in line.words:
                 num_words += 1
         return num_words
-
-
-class Frame:
-    """Represents a single picture frame in the video.
-
-    picture_directory: location of the frame on the device
-    time_stamp: time of the frame in the video
-    lines: lines of text in the frame
-    """
-    picture_directory: str
-    time_stamp: 'Timestamp'
-    lines: List['Line']
-
-    def __init__(self, picture_directory: str, time_stamp: 'Timestamp') -> None:
-        self.picture_directory = picture_directory
-        self.time_stamp = time_stamp
-        self.lines = []
-
-    def get_ocr_prediction(self):
-        """Gets the OCR prediction of the frame from Microsoft
-
-        https://westus.dev.cognitive.microsoft.com/docs/services/
-        56f91f2d778daf23d8ec6739/operations/56f91f2e778daf14a499e1fc"""
-
-        api_key = '8b171262b47349bc9ab7967726fb5d96'
-        headers = {'Content-Type': 'application/octet-stream', 'Ocp-Apim-Subscription-Key': api_key}
-        data = open(self.picture_directory, 'rb').read()
-
-        r = requests.post('https://eastus.api.cognitive.microsoft.com/vision/v1.0/ocr?language=en',
-                          headers=headers,
-                          data=data)
-
-        print(r.text)
-        self.update_stats(json.loads(r.text))
-
-    def update_stats(self, stats: Dict) -> None:
-        """
-        Takes a dictionary of statistics given by microsoft,
-        and converts it into both a list of lines, and a list of words
-        """
-        regions = stats['regions']
-        for region in regions:
-            lines = region['lines']
-            for line in lines:
-                words = line['words']
-                wl = []
-                line_text = ''
-                for word in words:
-                    line_text += ' ' + word['text']
-                    bb = tuple(map(int, word['boundingBox'].split(',')))
-                    wl.append(Word(word['text'], bb))
-                bb = tuple(map(int, line['boundingBox'].split(',')))
-                self.lines.append(Line(line_text, bb, wl))
-
-
-class Line:
-    """Represents a single line of text in a frame
-
-    text: the text of this line
-    bounding_box: a rectangle which surrounds this
-    line. Tuple of (x, y, length, width), where
-    x, y are the top left corner
-    words: list of word objects that make up a line
-    """
-    text: str
-    bounding_box: tuple()
-    words: List['Word']
-
-    def __init__(self, text: str, box: tuple(), list_of_words: List['Word']) -> None:
-        self.text = text
-        self.bounding_box = box
-        self.words = list_of_words
-
-
-class Word:
-    """Represents a word in a frame
-
-    text: text of the word
-    bounding_box: a rectangle which surrounds this
-    line. Tuple of (x, y, length, width), where
-    x, y are the top left corner
-    """
-    text: str
-    bounding_box: tuple()
-
-    def __init__(self, text: str, box: tuple()) -> None:
-        self.text = text
-        self.bounding_box = box
-
-
-class Timestamp:
-    """Timestamp object for a video
-
-    mins: minutes of the timestamp
-    sec: seconds of the timestamp"""
-    mins: int
-    sec: int
-
-    def __init__(self, mins: int, sec: int) -> None:
-        """Initialize the Timestamp"""
-        self.mins = mins
-        self.sec = sec
-
-    def __str__(self) -> str:
-        """Prints the timestamp"""
-        return str(self.mins) + 'm' + str(self.sec) + 's'
-
-    def to_secs(self) -> int:
-        """Takes Timestamp and converts it to seconds"""
-        return self.mins * 60 + self.sec
-
