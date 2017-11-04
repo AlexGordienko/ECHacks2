@@ -32,7 +32,7 @@ class Frame:
         headers = {'Content-Type': 'application/octet-stream', 'Ocp-Apim-Subscription-Key': api_key}
         data = open(self.picture_directory, 'rb').read()
 
-        r = requests.post('https://eastus.api.cognitive.microsoft.com/vision/v1.0/ocr?language=en',
+        r = requests.post('https://eastus.api.cognitive.microsoft.com/vision/v1.0/recognizeText?handwriting',
                           headers=headers,
                           data=data)
 
