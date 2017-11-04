@@ -65,8 +65,7 @@ class Frame:
 
         stats = json.loads(r.text)
 
-        print(self.picture_directory)
-        print(r.text)
+        print(r.text + ",")
 
         result = stats['recognitionResult']
         lines = result['lines']
