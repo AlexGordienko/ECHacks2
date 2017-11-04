@@ -12,6 +12,15 @@ module.exports = {
     module: {
         loaders: [
             {
+                test: /\.json$/,
+                loader: 'json-loader'
+            },
+            {
+                test: /\.(?:png|jpg|svg)$/,
+                loader: 'url-loader'
+
+            },
+            {
                 test: /\.ts$/,
                 loaders: [
                     'awesome-typescript-loader',

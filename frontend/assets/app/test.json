@@ -1,0 +1,36 @@
+{
+  "frame_one": {
+    "keyword_one":{
+      "name": "First",
+      "key_one_url": "https://www.youtube.com/embed/EF8UnVXj0gY?start=60&autoplay=1",
+      "key_one_context_url": "https://en.wikipedia.org/wiki/Naturalistic Imperative",
+      "key_one_y": 30,
+      "key_one_x": 130,
+      "key_one_fs": 20
+    },
+    "keyword_two":{
+      "name": "Second",
+      "key_two_url": "https://www.youtube.com/embed/EF8UnVXj0gY?start=60&autoplay=1",
+      "key_two_context_url": "https://en.wikipedia.org/wiki/Mitochondrion",
+      "key_two_y": 130,
+      "key_two_x": 40,
+      "key_two_fs": 14,
+      "key_two_wid": 150
+    },
+    "keyword_three":{
+      "name": "Second",
+      "key_two_url": "https://www.youtube.com/embed/EF8UnVXj0gY?start=60&autoplay=1",
+      "key_two_context_url": "https://en.wikipedia.org/wiki/Mitochondrion",
+      "key_two_y": 130,
+      "key_two_x": 40,
+      "key_two_fs": 14,
+      "key_two_wid": 150
+    },
+    "key_img":{
+      "key_img_url": "https://upload.wikimedia.org/wikipedia/commons/e/e8/Figure_35_03_03.png",
+      "key_img_wid": 240,
+      "key_img_hei": 180
+    }
+
+  }
+}
