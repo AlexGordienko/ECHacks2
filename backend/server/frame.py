@@ -4,6 +4,7 @@ import json
 from backend.server.timestamp import Timestamp
 from backend.server.line import Line
 from backend.server.word import Word
+from backend.server.diagram import Diagram
 
 
 class Frame:
@@ -17,12 +18,14 @@ class Frame:
     time_stamp: 'Timestamp'
     lines: List['Line']
     return_url: str
+    diagram: 'Diagram'
 
     def __init__(self, picture_directory: str, time_stamp: 'Timestamp') -> None:
         self.picture_directory = picture_directory
         self.time_stamp = time_stamp
         self.lines = []
         self.return_url = ''
+        self.diagram = None
 
     def get_ocr_prediction(self) -> None:
         """Gets the OCR prediction of the frame from Microsoft
