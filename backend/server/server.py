@@ -18,5 +18,6 @@ def process_video(url, name) -> None:
     print('Downloaded')
     video.parse_frames()
 
+
 if __name__ == '__main__':
     app.run()
