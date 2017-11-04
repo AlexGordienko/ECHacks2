@@ -16,6 +16,7 @@ class Video:
     frames: ['Frame']
     name: str
     fps: int
+    relevant_frames: ['Frame']
 
     def __init__(self, link: str, name: str) -> None:
         """Initializes a video object"""
@@ -59,6 +60,52 @@ class Video:
 
                 # TODO: Make this none blocking
                 new_frame.get_ocr_prediction()
+
+    def update_relevant_frames(self) -> None:
+        """
+        Method which selects frames that represent a full chalkboard,
+        and populates the relevant_frames list with these frames
+        """
+
+        # Analyze first and fourth elements, and look for a
+        # increase / decrease in words count.
+        # An increase in words imply the prof is writing something
+        # A decrease in words imply he/she is erasing something
+
+        start = 0
+        end = 4
+        while end < len(self.frames):
+            start_frame = self.frames[start]
+            end_frame = self.frames[end]
+            start_frame_words = self._get_num_words(start_frame)
+            end_frame_words = self._get_num_words(end_frame)
+
+            # Decreasing behavior, so start_frame words
+            # is likely the board when it is being erased
+            if end_frame_words < start_frame_words:
+                # Check if the decrease is significant.
+                # That is, one third the words are removed within
+                # these four seconds
+                words_removed = end_frame_words - start_frame_words
+                if words_removed >= (start_frame_words // 3):
+                    # The board first frame is likely a relevant frame
+                    # being cleared.
+                    self.relevant_frames.append(start_frame)
+
+            start += 1
+            end += 1
+
+    def _get_num_words(self, frame: Frame) -> int:
+        """
+        A helper function which returns the number
+        of words in a frame
+
+        """
+        num_words = 0
+        for line in frame.lines:
+            for word in line.words:
+                num_words += 1
+        return num_words
 
 
 class Frame:
