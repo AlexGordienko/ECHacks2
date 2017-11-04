@@ -1,8 +1,9 @@
 from pytube import YouTube
 import cv2
-from typing import List, Dict, Tuple
+from typing import List, Dict
 import requests
 import json
+import threading
 
 
 class Video:
@@ -142,7 +143,6 @@ class Frame:
         print(r.text)
         self.update_stats(json.loads(r.text))
 
-    # TODO: Clean up
     def update_stats(self, stats: Dict) -> None:
         """
         Takes a dictionary of statistics given by microsoft,
