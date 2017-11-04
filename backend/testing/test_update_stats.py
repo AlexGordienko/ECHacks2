@@ -1,8 +1,6 @@
 #from backend.server.video import Frame, Timestamp
 #import json
 
-print("hello")
-
 # def test_update_stats():
 #
 #     test_frame = Frame("handwritten_1.jpg", Timestamp(0, 25))

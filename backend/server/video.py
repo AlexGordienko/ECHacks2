@@ -58,8 +58,11 @@ class Video:
                 new_frame = Frame(name, time_stamp)
                 self.frames.append(new_frame)
 
-                # TODO: Make this none blocking
-                new_frame.get_ocr_prediction()
+        for frame in self.frames:
+            frame.get_ocr_prediction()
+
+        for frame in self.frames:
+            frame.update_stats()
 
     def update_relevant_frames(self) -> None:
         """
