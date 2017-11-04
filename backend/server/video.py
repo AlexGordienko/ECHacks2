@@ -1,6 +1,7 @@
 from pytube import YouTube
 import cv2
 from typing import List, Dict, Tuple
+import requests
 
 
 class Video:
@@ -28,7 +29,7 @@ class Video:
         """Downloads a youtube video to the drive"""
         stream = YouTube(self.link).streams.first()
         stream.download('./')
-        self.fps = int(stream.fps[:-3])
+        self.fps = stream.fps
         self.directory = './' + stream.default_filename
 
     def parse_frames(self) -> None:
@@ -44,13 +45,13 @@ class Video:
         while success:
             success, image = vidcap.read()
             current_frame += 1
-            # Go through every tenth frame
-            if current_frame % 10 == 0:
+            # Go through every second of the video
+            if current_frame % self.fps == 0:
                 # Save frame as JPEG file
                 cv2.imwrite(self.name + "frame%d.jpg" % current_frame, image)
 
                 # Get the name of this current frame
-                name = self.name + "frame%d.jpg"
+                name = self.name + "frame%d.jpg" % current_frame
                 secs = current_frame // self.fps
                 time_stamp = Timestamp(secs // 60, secs % 60)
                 new_frame = Frame(name, time_stamp)
@@ -82,10 +83,18 @@ class Frame:
         https://westus.dev.cognitive.microsoft.com/docs/services/
         56f91f2d778daf23d8ec6739/operations/56f91f2e778daf14a499e1fc"""
         # TODO: Implement
-        pass
+
+        api_key = 'd1f28d809db94a6e81204110dd40aa29'
+        headers = {'Content-Type': 'application/octet-stream', 'Ocp-Apim-Subscription-Key': api_key}
+
+        r = requests.post('https://eastus.api.cognitive.microsoft.com/vision/v1.0/ocr?language=en',
+                          headers=headers,
+                          data=open(self.picture_directory, 'r').read())
+
+        print(r.text)
 
     # TODO: Clean up
-    def update_stats(self, stats: Dict['String']) -> None:
+    def update_stats(self, stats: Dict) -> None:
         """
         Takes a dictionary of statistics given by microsoft,
         and converts it into both a list of lines, and a list of words
@@ -105,7 +114,7 @@ class Frame:
 
             self.lines.append(Line(line_text, bounding_box, list_of_words))
 
-    def _add_word(self, list_of_words: List[""], word_stats: Dict):
+    def _add_word(self, list_of_words: List[str], word_stats: Dict):
         position_list = word_stats["boundingBox"]
 
         bounding_box_line = (position_list[0], position_list[1], position_list[2] - position_list[0],
@@ -124,10 +133,10 @@ class Line:
     words: list of word objects that make up a line
     """
     text: str
-    bounding_box: Tuple(int, int, int, int)
-    words: List[Word]
+    bounding_box: tuple()
+    words: List['Word']
 
-    def __init__(self, text, box, list_of_words) -> None:
+    def __init__(self, text: str, box: tuple(), list_of_words: List['Word']) -> None:
         self.text = text
         self.bounding_box = box
         self.words = list_of_words
@@ -141,11 +150,10 @@ class Word:
     line. Tuple of (x, y, length, width), where
     x, y are the top left corner
     """
-
     text: str
-    bounding_box: Tuple(int, int, int, int)
+    bounding_box: tuple()
 
-    def __init__(self, text, box) -> None:
+    def __init__(self, text: str, box: tuple()) -> None:
         self.text = text
         self.bounding_box = box
 
@@ -165,4 +173,4 @@ class Timestamp:
 
     def __str__(self) -> str:
         """Prints the timestamp"""
-        return str(self.mins)+ "m" + str(self.sec) + "s"
+        return str(self.mins) + 'm' + str(self.sec) + 's'

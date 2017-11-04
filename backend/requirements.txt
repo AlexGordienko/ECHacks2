@@ -1,3 +1,4 @@
 opencv-python
 Flask
 pytube
+requests
