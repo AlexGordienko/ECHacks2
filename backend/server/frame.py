@@ -1,31 +1,38 @@
 from typing import List, Dict, Tuple
+import time
+
 
 class Frame:
-    """
-    Represents a single picture frame in the video
+    """Represents a single picture frame in the video.
 
+    picture_directory: location of the frame on the device
+    time_stamp: time of the frame in the video
+    lines: lines of text in the frame
     """
-
-    picture_url: str
-    time: float
+    picture_directory: str
+    time_stamp: time
     lines: List[Line]
 
-    def __init__(self, url: str, time: float) -> None:
-        self.picture_url = url
-        self.time = time
+    def __init__(self, picture_directory: str, time_stamp: time) -> None:
+        self.picture_directory = picture_directory
+        self.time_stamp = time_stamp
         self.lines = []
 
+    def get_ocr_prediction(self):
+        """Gets the OCR prediction of the frame from Microsoft
+
+        https://westus.dev.cognitive.microsoft.com/docs/services/
+        56f91f2d778daf23d8ec6739/operations/56f91f2e778daf14a499e1fc"""
+        # TODO: Implement
+        pass
+
+    # TODO: Clean up
     def update_stats(self, stats: Dict['String']) -> None:
         """
         Takes a dictionary of statistics given by microsoft,
         and converts it into both a list of lines, and a list of words
 
         """
-
-        # modify the dictionary given by microsoft,
-        # so we're just dealing with a list of stats
-        # for each 'line' (block of text) in the picture
-
         list_of_lines = stats["lines"]
 
         for line_stats in list_of_lines:
@@ -37,7 +44,7 @@ class Frame:
 
             # convert this into a tuple of (x, y, length, width) of the current line's BB
             bounding_box = (position_list[0], position_list[1], position_list[2] - position_list[0],
-                                 position_list[5] - position_list[1])
+                            position_list[5] - position_list[1])
 
             # create and fill a list of words of the current line
             list_of_words = []
@@ -51,25 +58,23 @@ class Frame:
             self.lines.append(Line(line_text, bounding_box, list_of_words))
 
     def _add_word(self, list_of_words: List[""], word_stats: Dict):
-            position_list = word_stats["boundingBox"]
+        position_list = word_stats["boundingBox"]
 
-            bounding_box_line = (position_list[0], position_list[1], position_list[2] - position_list[0],
-                                 position_list[5] - position_list[1])
+        bounding_box_line = (position_list[0], position_list[1], position_list[2] - position_list[0],
+                             position_list[5] - position_list[1])
 
-            list_of_words.append(Word(word_stats["text"], bounding_box_line))
+        list_of_words.append(Word(word_stats["text"], bounding_box_line))
 
 
 class Line:
-    """
-    Represents a single line
+    """Represents a single line of text in a frame
 
     text: the text of this line
     bounding_box: a rectangle which surrounds this
     line. Tuple of (x, y, length, width), where
     x, y are the top left corner
-
+    words: list of word objects that make up a line
     """
-
     text: str
     bounding_box: Tuple(int, int, int, int)
     words: List[Word]
@@ -81,10 +86,12 @@ class Line:
 
 
 class Word:
-    """
-    Represents a word, which has the same properties of a line
-    (except list of words)
+    """Represents a word in a frame
 
+    text: text of the word
+    bounding_box: a rectangle which surrounds this
+    line. Tuple of (x, y, length, width), where
+    x, y are the top left corner
     """
 
     text: str
