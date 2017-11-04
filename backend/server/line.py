@@ -19,3 +19,13 @@ class Line:
         self.text = text
         self.bounding_box = box
         self.words = list_of_words
+
+    def __eq__(self, other: 'Line') -> bool:
+        """
+        Check for equality between two Line objects.
+        Two lines are equal if they have the same text.
+        """
+        if self.text == other.text:
+            return True
+        else:
+            return False
