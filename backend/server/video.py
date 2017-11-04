@@ -2,7 +2,9 @@ from pytube import YouTube
 import cv2
 from backend.server.timestamp import Timestamp
 from backend.server.frame import Frame
-
+from backend.server.word import Word
+from backend.server.line import Line
+import json
 
 class Video:
     """ Represents a uploaded youtube video
@@ -57,6 +59,8 @@ class Video:
                 time_stamp = Timestamp(secs // 60, secs % 60)
                 new_frame = Frame(name, time_stamp)
                 self.frames.append(new_frame)
+                if current_frame > 3000:
+                    success = False
 
     def ocr_frames(self) -> None:
         """Performs OCR on each frame"""
@@ -65,6 +69,53 @@ class Video:
 
         for frame in self.frames:
             frame.update_stats()
+
+    def read_preloaded_frame_data(self):
+        """
+        A function which updates the data for each frame of the video
+        using preloaded statistics from a past microsoft CV run
+
+        """
+
+        # open the JSON file and read the statistics
+        # of the vid_2 video
+        with open('test_vid_2.json') as data_file:
+            stats = json.load(data_file)
+
+            # frames is a list of each individual frame
+            frames = stats["data"]
+
+            # the section of frames which actually represents
+            # a frame (and not a confirmation message)
+            for i in range(0, len(self.frames)):
+                section = frames[i]
+                # a dictionary which represents this frame's stats
+                current_frame = section["recognitionResult"]
+                # the actual frame object
+                actual_frame = self.frames[i]
+                # the lines of this frame
+                lines = current_frame["lines"]
+                for line in lines:
+
+                    # each line is a dictionary containing this line's stats
+
+                    # the bounding box for this line
+                    line_box = Frame._make_bounding_box(actual_frame, line["boundingBox"])
+
+                    # the text for this line
+                    line_text = line['text']
+
+                    # the list of Word objects for this line
+                    line_wordslist = []
+
+                    words = line['words']
+                    for word in words:
+                        word_box = Frame._make_bounding_box(actual_frame, word["boundingBox"])
+                        line_wordslist.append(Word(word['text'], word_box))
+
+                    # line_wordslist is now filled with word objects.
+                    # add this line to the current iterated frame
+                    actual_frame.lines.append(Line(line_text, line_box, line_wordslist))
 
     def update_relevant_frames(self) -> None:
         """

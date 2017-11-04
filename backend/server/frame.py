@@ -71,13 +71,13 @@ class Frame:
             bb = self._make_bounding_box(line['boundingBox'])
             self.lines.append(Line(line['text'], bb, wl))
 
-    def _make_bounding_box(self, coordinates: tuple()) -> tuple():
+    def _make_bounding_box(self, coordinates: List) -> tuple():
         """Helper function to calculate bounding box coordinates
 
         return format (x,y,width,height)
         """
 
-        return coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[5] - coordinates[1]
+        return (coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[5] - coordinates[1])
 
     def crop_frame(self):
         """
