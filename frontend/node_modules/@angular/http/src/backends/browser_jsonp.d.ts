@@ -1,4 +1,4 @@
-export declare const JSONP_HOME = "__ng_jsonp__";
+export declare const JSONP_HOME: string;
 export declare class BrowserJsonp {
     build(url: string): any;
     nextRequestID(): string;

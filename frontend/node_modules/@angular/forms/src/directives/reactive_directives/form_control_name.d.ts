@@ -5,12 +5,13 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-import { EventEmitter, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { EventEmitter } from '../../facade/async';
 import { FormControl } from '../../model';
 import { ControlContainer } from '../control_container';
 import { ControlValueAccessor } from '../control_value_accessor';
 import { NgControl } from '../ng_control';
-import { AsyncValidator, AsyncValidatorFn, Validator, ValidatorFn } from '../validators';
+import { AsyncValidatorFn, Validator, ValidatorFn } from '../validators';
 export declare const controlNameBinding: any;
 /**
  * @whatItDoes  Syncs a {@link FormControl} in an existing {@link FormGroup} to a form control
@@ -31,7 +32,7 @@ export declare const controlNameBinding: any;
  * closest {@link FormGroup} or {@link FormArray} above it.
  *
  * **Access the control**: You can access the {@link FormControl} associated with
- * this directive by using the {@link AbstractControl#get get} method.
+ * this directive by using the {@link AbstractControl.get} method.
  * Ex: `this.form.get('first');`
  *
  * **Get value**: the `value` property is always synced and available on the {@link FormControl}.
@@ -39,11 +40,11 @@ export declare const controlNameBinding: any;
  *
  *  **Set value**: You can set an initial value for the control when instantiating the
  *  {@link FormControl}, or you can set it programmatically later using
- *  {@link AbstractControl#setValue setValue} or {@link AbstractControl#patchValue patchValue}.
+ *  {@link AbstractControl.setValue} or {@link AbstractControl.patchValue}.
  *
  * **Listen to value**: If you want to listen to changes in the value of the control, you can
- * subscribe to the {@link AbstractControl#valueChanges valueChanges} event.  You can also listen to
- * {@link AbstractControl#statusChanges statusChanges} to be notified when the validation status is
+ * subscribe to the {@link AbstractControl.valueChanges} event.  You can also listen to
+ * {@link AbstractControl.statusChanges} to be notified when the validation status is
  * re-calculated.
  *
  * ### Example
@@ -69,15 +70,15 @@ export declare class FormControlName extends NgControl implements OnChanges, OnD
     model: any;
     update: EventEmitter<{}>;
     isDisabled: boolean;
-    constructor(parent: ControlContainer, validators: Array<Validator | ValidatorFn>, asyncValidators: Array<AsyncValidator | AsyncValidatorFn>, valueAccessors: ControlValueAccessor[]);
+    constructor(parent: ControlContainer, validators: Array<Validator | ValidatorFn>, asyncValidators: Array<Validator | AsyncValidatorFn>, valueAccessors: ControlValueAccessor[]);
     ngOnChanges(changes: SimpleChanges): void;
     ngOnDestroy(): void;
     viewToModelUpdate(newValue: any): void;
-    readonly path: string[];
-    readonly formDirective: any;
-    readonly validator: ValidatorFn | null;
-    readonly asyncValidator: AsyncValidatorFn;
-    readonly control: FormControl;
+    path: string[];
+    formDirective: any;
+    validator: ValidatorFn;
+    asyncValidator: AsyncValidatorFn;
+    control: FormControl;
     private _checkParentType();
     private _setUpControl();
 }

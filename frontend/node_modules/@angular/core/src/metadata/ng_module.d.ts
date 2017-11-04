@@ -27,7 +27,7 @@ export interface SchemaMetadata {
 }
 /**
  * Defines a schema that will allow:
- * - any non-Angular elements with a `-` in their name,
+ * - any non-angular elements with a `-` in their name,
  * - any properties on elements with a `-` in their name which is the common rule for custom
  * elements.
  *
@@ -119,9 +119,9 @@ export interface NgModule {
      */
     imports?: Array<Type<any> | ModuleWithProviders | any[]>;
     /**
-     * Specifies a list of directives/pipes/modules that can be used within the template
-     * of any component that is part of an Angular module
-     * that imports this Angular module.
+     * Specifies a list of directives/pipes/module that can be used within the template
+     * of any component that is part of an angular module
+     * that imports this angular module.
      *
      * ### Example
      *
@@ -135,9 +135,10 @@ export interface NgModule {
      */
     exports?: Array<Type<any> | any[]>;
     /**
-     * Specifies a list of components that should be compiled when this module is defined.
-     * For each component listed here, Angular will create a {@link ComponentFactory}
-     * and store it in the {@link ComponentFactoryResolver}.
+     * Defines the components that should be compiled as well when
+     * this component is defined. For each components listed here,
+     * Angular will create a {@link ComponentFactory ComponentFactory} and store it in the
+     * {@link ComponentFactoryResolver ComponentFactoryResolver}.
      */
     entryComponents?: Array<Type<any> | any[]>;
     /**
@@ -147,7 +148,7 @@ export interface NgModule {
      */
     bootstrap?: Array<Type<any> | any[]>;
     /**
-     * Elements and properties that are not Angular components nor directives have to be declared in
+     * Elements and properties that are not angular Components nor Directives have to be declared in
      * the schema.
      *
      * Available schemas:
@@ -167,7 +168,7 @@ export interface NgModule {
     id?: string;
 }
 /**
- * NgModule decorator and metadata.
+ * NgModule decorator and metadata
  *
  * @stable
  * @Annotation

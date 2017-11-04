@@ -5,19 +5,42 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-import { MissingTranslationStrategy, ViewEncapsulation } from '@angular/core';
+import { ViewEncapsulation } from '@angular/core';
+import { CompileIdentifierMetadata } from './compile_metadata';
 export declare class CompilerConfig {
-    defaultEncapsulation: ViewEncapsulation | null;
-    enableLegacyTemplate: boolean;
+    renderTypes: RenderTypes;
+    defaultEncapsulation: ViewEncapsulation;
+    private _genDebugInfo;
+    private _logBindingUpdate;
     useJit: boolean;
-    missingTranslation: MissingTranslationStrategy | null;
-    preserveWhitespaces: boolean;
-    constructor({defaultEncapsulation, useJit, missingTranslation, enableLegacyTemplate, preserveWhitespaces}?: {
+    constructor({renderTypes, defaultEncapsulation, genDebugInfo, logBindingUpdate, useJit}?: {
+        renderTypes?: RenderTypes;
         defaultEncapsulation?: ViewEncapsulation;
+        genDebugInfo?: boolean;
+        logBindingUpdate?: boolean;
         useJit?: boolean;
-        missingTranslation?: MissingTranslationStrategy;
-        enableLegacyTemplate?: boolean;
-        preserveWhitespaces?: boolean;
     });
+    genDebugInfo: boolean;
+    logBindingUpdate: boolean;
 }
-export declare function preserveWhitespacesDefault(preserveWhitespacesOption: boolean | null, defaultSetting?: boolean): boolean;
+/**
+ * Types used for the renderer.
+ * Can be replaced to specialize the generated output to a specific renderer
+ * to help tree shaking.
+ */
+export declare abstract class RenderTypes {
+    renderer: CompileIdentifierMetadata;
+    renderText: CompileIdentifierMetadata;
+    renderElement: CompileIdentifierMetadata;
+    renderComment: CompileIdentifierMetadata;
+    renderNode: CompileIdentifierMetadata;
+    renderEvent: CompileIdentifierMetadata;
+}
+export declare class DefaultRenderTypes implements RenderTypes {
+    renderer: CompileIdentifierMetadata;
+    renderText: any;
+    renderElement: any;
+    renderComment: any;
+    renderNode: any;
+    renderEvent: any;
+}

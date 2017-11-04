@@ -46,6 +46,3 @@ export declare class Text implements Node {
     constructor(unescapedValue: string);
     visit(visitor: IVisitor): any;
 }
-export declare class CR extends Text {
-    constructor(ws?: number);
-}
