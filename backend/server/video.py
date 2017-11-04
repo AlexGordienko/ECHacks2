@@ -2,6 +2,7 @@ from pytube import YouTube
 import cv2
 from typing import List, Dict, Tuple
 import requests
+import json
 
 
 class Video:
@@ -95,7 +96,7 @@ class Video:
             start += 1
             end += 1
 
-    def _get_num_words(self, frame: Frame) -> int:
+    def _get_num_words(self, frame: 'Frame') -> int:
         """
         A helper function which returns the number
         of words in a frame
@@ -129,45 +130,37 @@ class Frame:
 
         https://westus.dev.cognitive.microsoft.com/docs/services/
         56f91f2d778daf23d8ec6739/operations/56f91f2e778daf14a499e1fc"""
-        # TODO: Implement
 
-        api_key = 'd1f28d809db94a6e81204110dd40aa29'
+        api_key = '8b171262b47349bc9ab7967726fb5d96'
         headers = {'Content-Type': 'application/octet-stream', 'Ocp-Apim-Subscription-Key': api_key}
+        data = open(self.picture_directory, 'rb').read()
 
         r = requests.post('https://eastus.api.cognitive.microsoft.com/vision/v1.0/ocr?language=en',
                           headers=headers,
-                          data=open(self.picture_directory, 'r').read())
+                          data=data)
 
         print(r.text)
+        self.update_stats(json.loads(r.text))
 
     # TODO: Clean up
     def update_stats(self, stats: Dict) -> None:
         """
         Takes a dictionary of statistics given by microsoft,
         and converts it into both a list of lines, and a list of words
-
         """
-        list_of_lines = stats["lines"]
-        for line_stats in list_of_lines:
-            line_text = line_stats["text"]
-            position_list = line_stats["boundingBox"]
-            bounding_box = (position_list[0], position_list[1], position_list[2] - position_list[0],
-                            position_list[5] - position_list[1])
-
-            list_of_words = []
-            words = line_stats["words"]
-            for word_stats in words:
-                self._add_word(list_of_words, word_stats)
-
-            self.lines.append(Line(line_text, bounding_box, list_of_words))
-
-    def _add_word(self, list_of_words: List[str], word_stats: Dict):
-        position_list = word_stats["boundingBox"]
-
-        bounding_box_line = (position_list[0], position_list[1], position_list[2] - position_list[0],
-                             position_list[5] - position_list[1])
-
-        list_of_words.append(Word(word_stats["text"], bounding_box_line))
+        regions = stats['regions']
+        for region in regions:
+            lines = region['lines']
+            for line in lines:
+                words = line['words']
+                wl = []
+                line_text = ''
+                for word in words:
+                    line_text += ' ' + word['text']
+                    bb = tuple(map(int, word['boundingBox'].split(',')))
+                    wl.append(Word(word['text'], bb))
+                bb = tuple(map(int, line['boundingBox'].split(',')))
+                self.lines.append(Line(line_text, bb, wl))
 
 
 class Line:
@@ -221,3 +214,8 @@ class Timestamp:
     def __str__(self) -> str:
         """Prints the timestamp"""
         return str(self.mins) + 'm' + str(self.sec) + 's'
+
+    def to_secs(self) -> int:
+        """Takes Timestamp and converts it to seconds"""
+        return self.mins * 60 + self.sec
+
