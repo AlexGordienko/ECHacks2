@@ -117,4 +117,33 @@ class Video:
             image = cv2.imread(frame.picture_directory, 0)
             cv2.imshow('image', image)
             cv2.waitKey(0)
+
+            def find_first_occurance(self, line: 'Line') -> Frame:
+                """
+                Return the first frame which contains this Line object
+
+                Return None if this Line object is not in any frames
+                """
+
+                first_frame = None
+                for frame in self.frames:
+                    if line in frame.lines:
+                        first_frame = frame
+
+                return first_frame
+
             cv2.destroyAllWindows()
+
+    def find_first_occurance(self, line: 'Line') -> Frame:
+        """
+        Return the first frame which contains this Line object
+
+        Return None if this Line object is not in any frames
+        """
+
+        first_frame = None
+        for frame in self.frames:
+            if line in frame.lines:
+                first_frame = frame
+
+        return first_frame
