@@ -1,10 +1,13 @@
 from backend.server.video import Video
 import unittest
+import enchant
 
 
 class TestReleventFrames(unittest.TestCase):
 
     def test_relevant_frames(self):
+
+        d = enchant.Dict("en_US")
 
         new_vid = Video("insertlinkhere", "lecture1")
         new_vid.directory = "./test_vid_4.mp4"
@@ -16,7 +19,11 @@ class TestReleventFrames(unittest.TestCase):
 
         for frame in new_vid.relevant_frames:
             for line in frame.lines:
-                print(line.text)
+                for word in line.words:
+                    print(word.text)
+                    print(d.check(word.text))
+                    if not d.check(word.text):
+                        print(d.suggest(word.text))
         #new_vid.parse_diagram()
 
     def test_stats(self):
