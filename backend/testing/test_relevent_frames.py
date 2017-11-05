@@ -13,6 +13,10 @@ class TestReleventFrames(unittest.TestCase):
         new_vid.parse_frames_without_saving()
         new_vid.read_preloaded_frame_data()
         new_vid.update_relevant_frames()
+
+        for frame in new_vid.relevant_frames:
+            for line in frame.lines:
+                print(line.text)
         #new_vid.parse_diagram()
 
     def test_stats(self):

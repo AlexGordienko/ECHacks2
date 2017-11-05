@@ -3,3 +3,4 @@ Flask
 pytube
 requests
 Pillow
+enchant
