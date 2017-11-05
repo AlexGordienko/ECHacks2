@@ -72,13 +72,37 @@ class Frame:
         result = stats['recognitionResult']
         lines = result['lines']
         for line in lines:
+            # each line is a dictionary containing this line's stats
+
+            # the bounding box for this line
+            line_box = self._make_bounding_box(line["boundingBox"])
+
+            # the text for this line
+            line_text = line['text']
+
+            # the list of Word objects for this line
+            line_wordslist = []
+            d = enchant.Dict("en_US")
             words = line['words']
-            wl = []
             for word in words:
-                bb = self._make_bounding_box(word['boundingBox'])
-                wl.append(Word(word['text'], bb))
-            bb = self._make_bounding_box(line['boundingBox'])
-            self.lines.append(Line(line['text'], bb, wl))
+                word_box = self._make_bounding_box(word["boundingBox"])
+                wordtext = word['text']
+                # check if this word is actually a word. if not, try to fix it
+                if not d.check(wordtext):
+                    wordtext = d.suggest(wordtext)[0]
+
+                line_wordslist.append(Word(wordtext, word_box))
+
+            # line_wordslist is now filled with word objects.
+
+            # create this new Line object
+            new_line = Line(line_text, line_box, line_wordslist)
+
+            # fix it's text if needed
+            new_line.fix_text()
+
+            # add this new Line object to the current iterated frame
+            self.lines.append(new_line)
 
     def _make_bounding_box(self, coordinates: tuple()) -> tuple():
         """Helper function to calculate bounding box coordinates
