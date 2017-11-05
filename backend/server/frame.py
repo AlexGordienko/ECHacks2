@@ -7,7 +7,6 @@ from backend.server.word import Word
 from backend.server.diagram import Diagram
 from PIL import Image
 
-
 class Frame:
     """Represents a single picture frame in the video.
 
@@ -21,6 +20,7 @@ class Frame:
     return_url: str
     diagram: 'Diagram'
     frame_num: int
+    keywords: list
 
     def __init__(self, picture_directory: str, time_stamp: 'Timestamp', frame_number: int) -> None:
         self.picture_directory = picture_directory
@@ -29,6 +29,7 @@ class Frame:
         self.return_url = ''
         self.diagram = None
         self.frame_num = frame_number
+        self.keywords = []
 
     def get_ocr_prediction(self) -> None:
         """Gets the OCR prediction of the frame from Microsoft
@@ -84,3 +85,52 @@ class Frame:
         """
 
         return coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[5] - coordinates[1]
+
+    def mark_keywords(self):
+        """
+        Algorithm which marks the key words in a frame.
+        These are words that start with capital letters,
+        with the exception of words which start a sentence
+        and my name (Sid Gupta).
+        Also, if two keywords are right beside each other, they
+        probably belong together (like Prototype Theory). So deal
+        with that case at the end.
+        """
+        # list to help determine caps
+        caps = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+        for line in self.lines:
+            # iterate through the words in this line
+            for i in range(1, len(line.words)):
+                word = line.words[i]
+                if word.text[0] in caps and len(word.text) != 1:
+                    # Now check to make sure it doesn't
+                    # begin at the start of a sentence.
+                    # That is, the last word didn't end in a period
+                    last_word = line.words[i-1]
+                    if last_word.text[-1] != '.':
+                        # Final check; make sure it's not my name
+                        # (not a keyword!)
+                        if word.text != "Sid" and word.text != "Gupta":
+                            self.keywords.append(word)
+
+        # Analyze consequetive keywords (go backwards)
+        for i in range(len(self.keywords)-1, 0, -1):
+            word1 = self.keywords[i]
+            word2 = self.keywords[i-1]
+
+            word1_pos = word1.bounding_box
+            word2_pos = word2.bounding_box
+
+            # if the y position of the words is less than a difference of 5px,
+            # then consider them beside each other.
+            if abs(word1_pos[1] - word2_pos[1]) < 20:
+
+                # merge these two keywords into one keyword. this new word will be stored
+                # in word_2's position so it can be analyzed again, and word_2 / word_1
+                # will be popped
+                new_keyword = Word(word2.text + " " + word1.text,
+                                   (word2_pos[0], word2_pos[1], word2_pos[2] + word1_pos[2], word2_pos[3]))
+                self.keywords.insert(i - 1, new_keyword)
+                self.keywords.remove(word2)
+                self.keywords.remove(word1)
