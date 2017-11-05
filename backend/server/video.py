@@ -102,8 +102,8 @@ class Video:
         """
 
         # open the JSON file and read the statistics
-        # of the vid_4 video
-        with open('test_vid_4.json') as data_file:
+        # of the vid_5 video
+        with open('test_vid_5.json') as data_file:
             stats = json.load(data_file)
 
             # frames is a list of each individual frame
