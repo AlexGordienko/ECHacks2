@@ -4,6 +4,7 @@ import json
 from backend.server.timestamp import Timestamp
 from backend.server.line import Line
 from backend.server.word import Word
+from backend.server.diagram import Diagram
 
 
 class Frame:
@@ -17,14 +18,14 @@ class Frame:
     time_stamp: 'Timestamp'
     lines: List['Line']
     return_url: str
-    frame_num: int
+    diagram: 'Diagram'
 
-    def __init__(self, picture_directory: str, time_stamp: 'Timestamp', frame_num: int) -> None:
+    def __init__(self, picture_directory: str, time_stamp: 'Timestamp') -> None:
         self.picture_directory = picture_directory
         self.time_stamp = time_stamp
         self.lines = []
         self.return_url = ''
-        self.frame_num = frame_num
+        self.diagram = None
 
     def get_ocr_prediction(self) -> None:
         """Gets the OCR prediction of the frame from Microsoft
@@ -73,13 +74,13 @@ class Frame:
             bb = self._make_bounding_box(line['boundingBox'])
             self.lines.append(Line(line['text'], bb, wl))
 
-    def _make_bounding_box(self, coordinates: List) -> tuple():
+    def _make_bounding_box(self, coordinates: tuple()) -> tuple():
         """Helper function to calculate bounding box coordinates
 
         return format (x,y,width,height)
         """
 
-        return (coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[5] - coordinates[1])
+        return coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[5] - coordinates[1]
 
     def crop_frame(self):
         """
