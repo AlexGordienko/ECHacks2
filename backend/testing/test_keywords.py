@@ -7,7 +7,7 @@ import unittest
 def test_keywords():
 
     new_vid = Video("insertlinkhere", "lecture1")
-    new_vid.directory = "./test_vid_4.mp4"
+    new_vid.directory = "./test_vid_5.mp4"
     new_vid.fps = 30
 
     new_vid.parse_frames_without_saving()

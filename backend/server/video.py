@@ -132,26 +132,16 @@ class Video:
 
                     # the list of Word objects for this line
                     line_wordslist = []
-                    d = enchant.Dict("en_US")
                     words = line['words']
                     for word in words:
                         word_box = Frame._make_bounding_box(actual_frame, word["boundingBox"])
                         wordtext = word['text']
-
-                        # check if this word is actually a word. if not, try to fix it
-                        if not d.check(wordtext) and wordtext not in "!@#$%^&*()?":
-                            suggestions = d.suggest(wordtext)
-                            if(len(suggestions) != 0):
-                                wordtext = suggestions[0]
                         line_wordslist.append(Word(wordtext, word_box))
 
                     # line_wordslist is now filled with word objects.
 
                     # create this new Line object
                     new_line = Line(line_text, line_box, line_wordslist)
-
-                    # fix it's text if needed
-                    new_line.fix_text()
 
                     # add this new Line object to the current iterated frame
                     actual_frame.lines.append(new_line)

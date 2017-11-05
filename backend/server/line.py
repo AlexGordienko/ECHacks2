@@ -55,3 +55,14 @@ class Line:
         new_line_text = new_line_text[:-1]
         self.text = new_line_text
 
+    def fix_words(self):
+        for word in self.words:
+            wordtext = word.text
+            d = enchant.Dict("en_US")
+            # check if this word is actually a word. if not, try to fix it
+            if not d.check(wordtext) and wordtext not in "!@#$%^&*()?":
+                suggestions = d.suggest(wordtext)
+                if (len(suggestions) != 0):
+                    wordtext = suggestions[0]
+
+            word.text = wordtext

@@ -82,26 +82,16 @@ class Frame:
 
             # the list of Word objects for this line
             line_wordslist = []
-            d = enchant.Dict("en_US")
             words = line['words']
             for word in words:
-                word_box = self._make_bounding_box(word["boundingBox"])
+                word_box = Frame._make_bounding_box(word["boundingBox"])
                 wordtext = word['text']
-                # check if this word is actually a word. if not, try to fix it
-                if not d.check(wordtext):
-                    suggestions = d.suggest(wordtext)
-                    if (len(suggestions) != 0):
-                        wordtext = suggestions[0]
-
                 line_wordslist.append(Word(wordtext, word_box))
 
             # line_wordslist is now filled with word objects.
 
             # create this new Line object
             new_line = Line(line_text, line_box, line_wordslist)
-
-            # fix it's text if needed
-            new_line.fix_text()
 
             # add this new Line object to the current iterated frame
             self.lines.append(new_line)
@@ -138,6 +128,9 @@ class Frame:
                     last_word = line.words[i-1]
                     if last_word.text[-1] != '.':
                         self.keywords.append(word)
+
+            if(line.words[0].text not in {"A, The, In, And, How, Why, There"}):
+                self.keywords.append(line.words[0])
 
         # Analyze consequetive keywords (go backwards)
         for i in range(len(self.keywords)-1, 0, -1):
