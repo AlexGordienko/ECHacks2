@@ -6,6 +6,7 @@ from backend.server.line import Line
 from backend.server.word import Word
 from backend.server.diagram import Diagram
 from PIL import Image
+import enchant
 
 class Frame:
     """Represents a single picture frame in the video.
@@ -58,6 +59,7 @@ class Frame:
         Takes a dictionary of statistics given by microsoft,
         and converts it into both a list of lines, and a list of words
         """
+
         if self.return_url is None:
             return
 
@@ -109,10 +111,7 @@ class Frame:
                     # That is, the last word didn't end in a period
                     last_word = line.words[i-1]
                     if last_word.text[-1] != '.':
-                        # Final check; make sure it's not my name
-                        # (not a keyword!)
-                        if word.text != "Sid" and word.text != "Gupta":
-                            self.keywords.append(word)
+                        self.keywords.append(word)
 
         # Analyze consequetive keywords (go backwards)
         for i in range(len(self.keywords)-1, 0, -1):

@@ -1,5 +1,6 @@
 from typing import List
 from backend.server.word import Word
+import enchant
 
 
 class Line:
@@ -29,3 +30,26 @@ class Line:
             return True
         else:
             return False
+
+    def fix_text(self):
+        """
+        Go through each word in the line_text, and make sure each
+        word is an actual word ( and not mispelled / misinterpreted )
+        If it's misspelt, try to fix it.
+        """
+        words_in_line = self.text.split(" ")
+        d = enchant.Dict("en_US")
+        # if the current iterated word is NOT a word
+        for i in range(0, len(words_in_line)):
+            wordtext = words_in_line[i]
+            if not d.check(wordtext):
+                # try to fix it, and replace it
+                words_in_line[i] = d.suggest(wordtext)[0]
+
+        # rebuild the text of the line
+        new_line_text = ""
+        for wordtext in words_in_line:
+            new_line_text += wordtext + " "
+        new_line_text = new_line_text[:-1]
+        self.text = new_line_text
+

@@ -37,8 +37,5 @@ class TestReleventFrames(unittest.TestCase):
 
         print(new_vid.compile_stats())
 
-
-
-
 if __name__ == '__main__':
     unittest.main()

@@ -7,6 +7,7 @@ from backend.server.line import Line
 from backend.server.diagram import Diagram
 import json
 from typing import List, Dict
+import enchant
 
 
 class Video:
@@ -131,15 +132,27 @@ class Video:
 
                     # the list of Word objects for this line
                     line_wordslist = []
-
+                    d = enchant.Dict("en_US")
                     words = line['words']
                     for word in words:
                         word_box = Frame._make_bounding_box(actual_frame, word["boundingBox"])
-                        line_wordslist.append(Word(word['text'], word_box))
+                        wordtext = word['text']
+                        # check if this word is actually a word. if not, try to fix it
+                        if not d.check(wordtext):
+                            wordtext = d.suggest(wordtext)[0]
+
+                        line_wordslist.append(Word(wordtext, word_box))
 
                     # line_wordslist is now filled with word objects.
-                    # add this line to the current iterated frame
-                    actual_frame.lines.append(Line(line_text, line_box, line_wordslist))
+
+                    # create this new Line object
+                    new_line = Line(line_text, line_box, line_wordslist)
+
+                    # fix it's text if needed
+                    new_line.fix_text()
+
+                    # add this new Line object to the current iterated frame
+                    actual_frame.lines.append(new_line)
 
     def update_relevant_frames(self) -> None:
         """
