@@ -63,6 +63,26 @@ class Video:
                 new_frame = Frame(name, time_stamp, current_frame)
                 self.frames.append(new_frame)
 
+    def parse_frames_without_saving(self):
+        """
+        Parses the frames without saving them as jpeg files
+        (since they're probably already saved on there)
+        """
+        success = True
+        current_frame = 0
+        while success:
+            current_frame += 1
+            # Go through every second of the video
+            if current_frame % self.fps == 0:
+                # Get the name of this current frame
+                name = self.name + "frame%d.jpg" % current_frame
+                secs = current_frame // self.fps
+                time_stamp = Timestamp(secs // 60, secs % 60)
+                new_frame = Frame(name, time_stamp, current_frame)
+                self.frames.append(new_frame)
+
+            if current_frame == 10740:
+                success = False
 
     def ocr_frames(self) -> None:
         """Performs OCR on each frame"""

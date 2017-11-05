@@ -10,10 +10,9 @@ def test_relevant_frames():
     new_vid.directory = "./test_vid_4.mp4"
     new_vid.fps = 30
 
-    new_vid.parse_frames()
+    new_vid.parse_frames_without_saving()
     new_vid.read_preloaded_frame_data()
     new_vid.update_relevant_frames()
-
     new_vid.parse_diagram()
 
 if __name__ == '__main__':
