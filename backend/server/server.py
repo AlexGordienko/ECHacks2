@@ -1,5 +1,5 @@
 from backend.server.video import Video
-from flask import Flask
+from flask import Flask, make_response
 import threading
 import json
 app = Flask(__name__)
@@ -11,14 +11,17 @@ videos = {}
 def new_video(url: str, name: str) -> str:
     t = threading.Thread(target=process_video, args=(url, name))
     t.daemon = True
-    t.start()
-    return 'Thanks!'
+    #t.start()
+    return json.dumps({'results': 'Thanks!'})
 
 
 @app.route('/get-data/<string:name>')
 def get_data(name: str) -> str:
     video = videos[name]
-    return json.dumps(video.compile_stats())
+    resp = make_response(json.dumps(video.compile_stats()), 200)
+    resp.headers['Content-Type'] = 'application/json'
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 
 def process_video(url, name) -> None:

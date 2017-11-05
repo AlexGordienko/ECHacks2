@@ -286,7 +286,10 @@ class Video:
 
     # 460, 260
     def compile_stats(self) -> dict():
-        data = {'frame_one': {'keywords': []}, 'frame_two': {'keywords': []}, 'frame_three': {'keywords':[]}}
+        data = {'initurl': 'https://www.youtube.com/embed/' + self.link.split('/')[-1],
+                'frame_one': {'keywords': []},
+                'frame_two': {'keywords': []},
+                'frame_three': {'keywords': []}}
 
         # Frame 1
         frame_one = self.relevant_frames[0]
@@ -368,5 +371,8 @@ class Video:
                       'key_y': int(line.bounding_box[1] * (260 / 720))}
 
             data['frame_three']['keywords'].append(k_data)
+
+        for frame in self.relevant_frames:
+            frame.keywords = []
 
         return data
