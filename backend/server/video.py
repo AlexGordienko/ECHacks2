@@ -267,16 +267,19 @@ class Video:
         """
         return coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[5] - coordinates[1]
 
-    def find_first_occurance(self, line: 'Line') -> Frame:
+    def find_first_occurance(self, keyword: Word) -> 'Frame':
         """
         Return the first frame which contains this Line object
 
         Return None if this Line object is not in any frames
         """
-
+        # loop through every frame
         for frame in self.frames:
-            if line in frame.lines:
+            # calculate this current frame's keywords
+            frame.mark_keywords()
+            # check if this keyword is also a member of this
+            # iterated frame's keyword
+            if keyword in frame.keywords:
                 return frame
-
         return None
 

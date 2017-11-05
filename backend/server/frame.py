@@ -134,3 +134,13 @@ class Frame:
                 self.keywords.insert(i - 1, new_keyword)
                 self.keywords.remove(word2)
                 self.keywords.remove(word1)
+
+    def filter_keywords_from_lines(self):
+        """filter out the text of the keywords
+         from the lines in the frame"""
+
+        for line in self.lines:
+            for keyword in self.keywords:
+                line.text = line.text.replace(keyword.text, "")
+
+
