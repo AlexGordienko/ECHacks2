@@ -4,6 +4,7 @@ from backend.server.timestamp import Timestamp
 from backend.server.frame import Frame
 from backend.server.word import Word
 from backend.server.line import Line
+from backend.server.diagram import Diagram
 import json
 from typing import List
 
@@ -204,26 +205,47 @@ class Video:
 
     def parse_diagram(self):
         """Parses out diagrams from best frames"""
-        for frame in self.relevant_frames:
+        for i, frame in enumerate(self.relevant_frames):
             image = cv2.imread(frame.picture_directory, 0)
-            cv2.imshow('image', image)
-            cv2.waitKey(0)
+            image = cv2.fastNlMeansDenoising(image, 10, 10, 7, 21)
+            edges = cv2.Canny(image, 100, 200)
 
-            def find_first_occurance(self, line: 'Line') -> Frame:
-                """
-                Return the first frame which contains this Line object
+            right = 0
+            left = edges.shape[1]
+            top = edges.shape[0]
+            bottom = 0
 
-                Return None if this Line object is not in any frames
-                """
+            for line in frame.lines:
+                bb = self._make_bounding_box(line['boundingBox'])
+                if bb[1] < top:
+                    top = bb[1]
+                if bb[1] + bb[3] > bottom:
+                    bottom = bb[1] + bb[3]
+                if bb[0] < left:
+                    left = bb[0]
+                if bb[0] + bb[2] > right:
+                    right = bb[0] + bb[2]
+                edges[bb[1]:bb[1] + bb[3], bb[0]:bb[0] + bb[2]] = 0
 
-                first_frame = None
-                for frame in self.frames:
-                    if line in frame.lines:
-                        first_frame = frame
+            edges[:, :left] = 255
+            edges[:, right:] = 255
+            edges[bottom:, :] = 255
+            edges[:top, :] = 255
 
-                return first_frame
+            edges[top:bottom, left:right] = cv2.bitwise_not(edges[top:bottom, left:right])
 
-            cv2.destroyAllWindows()
+            image = edges[top:bottom, left:right]
+
+            cv2.imwrite(self.name + "Processedframe%d.jpg" % i, image)
+
+            frame.diagram = Diagram(self.name + "Processedframe%d.jpg" % i, [top, left, right - left, bottom - top])
+
+    def _make_bounding_box(self, coordinates: tuple()) -> tuple():
+        """Helper function to calculate bounding box coordinates
+
+        return format (x,y,width,height)
+        """
+        return coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[5] - coordinates[1]
 
     def find_first_occurance(self, line: 'Line') -> Frame:
         """
