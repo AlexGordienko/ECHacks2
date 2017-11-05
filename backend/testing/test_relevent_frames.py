@@ -12,7 +12,7 @@ def test_relevant_frames():
 
     new_vid.parse_frames()
     new_vid.read_preloaded_frame_data()
-    new_vid.update_relevant_frames_3()
+    new_vid.update_relevant_frames()
     for frame in new_vid.relevant_frames:
         print(frame.picture_directory)
 
