@@ -16,6 +16,10 @@ def test_read_preloaded():
 
     for frame in new_vid.relevant_frames:
         for line in frame.lines:
+            line.fix_text()
+            line.fix_words()
+
+        for line in frame.lines:
             print(line.text)
         print("")
         print("")
