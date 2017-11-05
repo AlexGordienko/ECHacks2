@@ -1,95 +1,164 @@
-from typing import List, Dict, Tuple
+from typing import List
+import requests
+import json
+from backend.server.timestamp import Timestamp
+from backend.server.line import Line
+from backend.server.word import Word
+from backend.server.diagram import Diagram
+from PIL import Image
+import enchant
 
 class Frame:
+    """Represents a single picture frame in the video.
+
+    picture_directory: location of the frame on the device
+    time_stamp: time of the frame in the video
+    lines: lines of text in the frame
     """
-    Represents a single picture frame in the video
+    picture_directory: str
+    time_stamp: 'Timestamp'
+    lines: List['Line']
+    return_url: str
+    diagram: 'Diagram'
+    frame_num: int
+    keywords: list
 
-    """
-
-    picture_url: str
-    time: float
-    lines: List[Line]
-
-    def __init__(self, url: str, time: float) -> None:
-        self.picture_url = url
-        self.time = time
+    def __init__(self, picture_directory: str, time_stamp: 'Timestamp', frame_number: int) -> None:
+        self.picture_directory = picture_directory
+        self.time_stamp = time_stamp
         self.lines = []
+        self.return_url = ''
+        self.diagram = None
+        self.frame_num = frame_number
+        self.keywords = []
 
-    def update_stats(self, stats: Dict['String']) -> None:
+    def get_ocr_prediction(self) -> None:
+        """Gets the OCR prediction of the frame from Microsoft
+
+        https://westus.dev.cognitive.microsoft.com/docs/services/
+        56f91f2d778daf23d8ec6739/operations/56f91f2e778daf14a499e1fc"""
+
+        api_key = '8b171262b47349bc9ab7967726fb5d96'
+        headers = {'Content-Type': 'application/octet-stream', 'Ocp-Apim-Subscription-Key': api_key}
+        data = open(self.picture_directory, 'rb')
+
+        r = requests.post('https://eastus.api.cognitive.microsoft.com/vision/v1.0/recognizeText?handwriting=true',
+                          headers=headers,
+                          data=data.read())
+
+        data.flush()
+        data.close()
+
+        if 'Operation-Location' in r.headers:
+            self.return_url = r.headers['Operation-Location']
+        else:
+            self.return_url = None
+
+    def update_stats(self) -> None:
         """
         Takes a dictionary of statistics given by microsoft,
         and converts it into both a list of lines, and a list of words
-
         """
 
-        # modify the dictionary given by microsoft,
-        # so we're just dealing with a list of stats
-        # for each 'line' (block of text) in the picture
+        if self.return_url is None:
+            return
 
-        list_of_lines = stats["lines"]
+        api_key = '8b171262b47349bc9ab7967726fb5d96'
+        r = requests.get(self.return_url,
+                         headers={'Ocp-Apim-Subscription-Key': api_key})
 
-        for line_stats in list_of_lines:
-            # text of this line
-            line_text = line_stats["text"]
+        stats = json.loads(r.text)
 
-            # get the list containing the line's bounding box position
-            position_list = line_stats["boundingBox"]
+        result = stats['recognitionResult']
+        lines = result['lines']
+        for line in lines:
+            # each line is a dictionary containing this line's stats
 
-            # convert this into a tuple of (x, y, length, width) of the current line's BB
-            bounding_box = (position_list[0], position_list[1], position_list[2] - position_list[0],
-                                 position_list[5] - position_list[1])
+            # the bounding box for this line
+            line_box = self._make_bounding_box(line["boundingBox"])
 
-            # create and fill a list of words of the current line
-            list_of_words = []
+            # the text for this line
+            line_text = line['text']
 
-            # the words for this line
-            words = line_stats["words"]
+            # the list of Word objects for this line
+            line_wordslist = []
+            words = line['words']
+            for word in words:
+                word_box = Frame._make_bounding_box(word["boundingBox"])
+                wordtext = word['text']
+                line_wordslist.append(Word(wordtext, word_box))
 
-            for word_stats in words:
-                self._add_word(list_of_words, word_stats)
+            # line_wordslist is now filled with word objects.
 
-            self.lines.append(Line(line_text, bounding_box, list_of_words))
+            # create this new Line object
+            new_line = Line(line_text, line_box, line_wordslist)
 
-    def _add_word(self, list_of_words: List[""], word_stats: Dict):
-            position_list = word_stats["boundingBox"]
+            # add this new Line object to the current iterated frame
+            self.lines.append(new_line)
 
-            bounding_box_line = (position_list[0], position_list[1], position_list[2] - position_list[0],
-                                 position_list[5] - position_list[1])
+    def _make_bounding_box(self, coordinates: tuple()) -> tuple():
+        """Helper function to calculate bounding box coordinates
 
-            list_of_words.append(Word(word_stats["text"], bounding_box_line))
+        return format (x,y,width,height)
+        """
+
+        return coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[5] - coordinates[1]
+
+    def mark_keywords(self):
+        """
+        Algorithm which marks the key words in a frame.
+        These are words that start with capital letters,
+        with the exception of words which start a sentence
+        and my name (Sid Gupta).
+        Also, if two keywords are right beside each other, they
+        probably belong together (like Prototype Theory). So deal
+        with that case at the end.
+        """
+        # list to help determine caps
+        caps = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+        for line in self.lines:
+            # iterate through the words in this line
+            for i in range(1, len(line.words)):
+                word = line.words[i]
+                if word.text[0] in caps and len(word.text) != 1:
+                    # Now check to make sure it doesn't
+                    # begin at the start of a sentence.
+                    # That is, the last word didn't end in a period
+                    last_word = line.words[i-1]
+                    if last_word.text[-1] != '.':
+                        if word.text not in {"The", "In", "And"}:
+                            self.keywords.append(word)
+
+            if line.words[0].text not in {"The", "In", "And", "How", "Why", "of", "non", "a"}:
+                self.keywords.append(line.words[0])
+        # Analyze consequetive keywords (go backwards)
+        for i in range(len(self.keywords)-1, 0, -1):
+            word1 = self.keywords[i]
+            word2 = self.keywords[i-1]
+
+            word1_pos = word1.bounding_box
+            word2_pos = word2.bounding_box
+
+            # if the y position of the words is less than a difference of 5px,
+            # then consider them beside each other.
+            if abs(word1_pos[1] - word2_pos[1]) < 20:
+
+                # merge these two keywords into one keyword. this new word will be stored
+                # in word_2's position so it can be analyzed again, and word_2 / word_1
+                # will be popped
+                new_keyword = Word(word2.text + " " + word1.text,
+                                   (word2_pos[0], word2_pos[1], word2_pos[2] + word1_pos[2], word2_pos[3]))
+                self.keywords.insert(i - 1, new_keyword)
+                self.keywords.remove(word2)
+                self.keywords.remove(word1)
+
+    def filter_keywords_from_lines(self):
+        """filter out the text of the keywords
+         from the lines in the frame"""
+
+        for line in self.lines:
+            for keyword in self.keywords:
+                line.text = line.text.replace(keyword.text, "_"*len(keyword.text))
 
 
-class Line:
-    """
-    Represents a single line
-
-    text: the text of this line
-    bounding_box: a rectangle which surrounds this
-    line. Tuple of (x, y, length, width), where
-    x, y are the top left corner
-
-    """
-
-    text: str
-    bounding_box: Tuple(int, int, int, int)
-    words: List[Word]
-
-    def __init__(self, text, box, list_of_words) -> None:
-        self.text = text
-        self.bounding_box = box
-        self.words = list_of_words
-
-
-class Word:
-    """
-    Represents a word, which has the same properties of a line
-    (except list of words)
-
-    """
-
-    text: str
-    bounding_box: Tuple(int, int, int, int)
-
-    def __init__(self, text, box) -> None:
-        self.text = text
-        self.bounding_box = box

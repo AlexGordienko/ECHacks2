@@ -1,4 +1,13 @@
 from pytube import YouTube
+import cv2
+from backend.server.timestamp import Timestamp
+from backend.server.frame import Frame
+from backend.server.word import Word
+from backend.server.line import Line
+from backend.server.diagram import Diagram
+import json
+from typing import List, Dict
+import enchant
 
 
 class Video:
@@ -11,20 +20,369 @@ class Video:
     link: str
     directory: str
     frames: ['Frame']
+    name: str
+    fps: int
+    relevant_frames: ['Frame']
 
-    def __init__(self, link: str) -> None:
+    def __init__(self, link: str, name: str) -> None:
         """Initializes a video object"""
         self.link = link
         self.directory = None
         self.frames = []
+        self.name = name
+        self.fps = -1
+        self.relevant_frames = []
 
     def download(self) -> None:
         """Downloads a youtube video to the drive"""
         stream = YouTube(self.link).streams.first()
         stream.download('./')
+        self.fps = stream.fps
         self.directory = './' + stream.default_filename
 
     def parse_frames(self) -> None:
-        """Computes the frames of the video"""
-        # TODO: parse the frames
-        pass
+        """
+        saves every tenth frame as a jpeg file in the 'server' directory,
+        and parses this video into a list of Frame objects
+
+        """
+        # OpenCV code used to read the frames in the video
+        vidcap = cv2.VideoCapture(self.directory)
+        success, image = vidcap.read()
+        current_frame = 0
+        while success:
+            success, image = vidcap.read()
+            current_frame += 1
+            # Go through every second of the video
+            if current_frame % self.fps == 0:
+                # Save frame as JPEG file
+                cv2.imwrite(self.name + "frame%d.jpg" % current_frame, image)
+
+                # Get the name of this current frame
+                name = self.name + "frame%d.jpg" % current_frame
+                secs = current_frame // self.fps
+                time_stamp = Timestamp(secs // 60, secs % 60)
+                new_frame = Frame(name, time_stamp, current_frame)
+                self.frames.append(new_frame)
+
+    def parse_frames_without_saving(self):
+        """
+        Parses the frames without saving them as jpeg files
+        (since they're probably already saved on there)
+        """
+        success = True
+        current_frame = 0
+        while success:
+            current_frame += 1
+            # Go through every second of the video
+            if current_frame % self.fps == 0:
+                # Get the name of this current frame
+                name = self.name + "frame%d.jpg" % current_frame
+                secs = current_frame // self.fps
+                time_stamp = Timestamp(secs // 60, secs % 60)
+                new_frame = Frame(name, time_stamp, current_frame)
+                self.frames.append(new_frame)
+
+    def ocr_frames(self) -> None:
+        """Performs OCR on each frame"""
+        for frame in self.frames:
+            frame.get_ocr_prediction()
+
+        for frame in self.frames:
+            frame.update_stats()
+
+    def read_preloaded_frame_data(self):
+        """
+        A function which updates the data for each frame of the video
+        using preloaded statistics from a past microsoft CV run
+
+        """
+
+        # open the JSON file and read the statistics
+        # of the vid_5 video
+        with open('test_vid_5.json') as data_file:
+            stats = json.load(data_file)
+
+            # frames is a list of each individual frame
+            frames = stats["data"]
+
+            # the section of frames which actually represents
+            # a frame (and not a confirmation message)
+            for i, frame in enumerate(frames):
+                # a dictionary which represents this frame's stats
+                current_frame = frame["recognitionResult"]
+                # the lines of this frame
+                lines = current_frame["lines"]
+                temp_lines = []
+                for line in lines:
+
+                    # each line is a dictionary containing this line's stats
+
+                    # the bounding box for this line
+                    line_box = self._make_bounding_box(line["boundingBox"])
+
+                    # the text for this line
+                    line_text = line['text']
+
+                    # the list of Word objects for this line
+                    line_wordslist = []
+                    words = line['words']
+                    for word in words:
+                        word_box = self._make_bounding_box(word["boundingBox"])
+                        wordtext = word['text']
+                        line_wordslist.append(Word(wordtext, word_box))
+
+                    # create this new Line object
+                    new_line = Line(line_text, line_box, line_wordslist)
+                    temp_lines.append(new_line)
+                f = Frame("NONE", Timestamp(i // 60, i % 60), i * 30)
+                f.lines = temp_lines
+                self.frames.append(f)
+
+    def _make_bounding_box(self, coordinates: tuple()) -> tuple():
+        """Helper function to calculate bounding box coordinates
+
+        return format (x,y,width,height)
+        """
+        return coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[5] - coordinates[1]
+
+    def update_relevant_frames(self) -> None:
+        """
+        Method which selects frames that represent a full chalkboard,
+        and populates the relevant_frames list with these frames
+        """
+
+        # First, get the maximum amount of words that ever occur on
+        # the board
+        max_words_on_board = self._get_max_words()
+
+        max_frames = []
+        # Store all the frames which contain this number within
+        # minus 2 words
+        for frame in self.frames:
+            words_in_frame = self._get_num_words(frame)
+            if words_in_frame >= max_words_on_board - 3:
+                max_frames.append(frame)
+
+        max_frames = self._remove_repeats(max_frames)
+        self.relevant_frames.extend(max_frames)
+
+    def _remove_repeats(self, max_frames: List['Frame']):
+        """
+        Remove the frames which come close together to each other
+        If there are a lot who are close together to each other,
+        pick the one that has the most number of words.
+        """
+
+        first = max_frames[0]
+        same = [first]
+        new_max_frames = []
+        for i in range(1, len(max_frames)):
+            frame = max_frames[i]
+            if frame.frame_num <= first.frame_num + 1500 and i != len(max_frames)-1:
+                same.append(frame)
+
+            else:
+                # if same is not empty, then we JUST reached a guy
+                # who isn't part of this interval of same frames.
+                if len(same) != 0:
+                    # choose the element in same who has the most words,
+                    # and add him to the new_max_frames list.
+                    # afterwards, reset same and first for this new guy
+                    new_max_frames.append(self._choose_best_in_same(same))
+                    first = frame
+                    same = [first]
+
+        return new_max_frames
+
+    def _choose_best_in_same(self, same: list):
+
+        # create a parallel list of each element in same's number of words
+        num_words = []
+        for frame in same:
+            num_words.append(self._get_num_words(frame))
+
+        # return the first maximum number of words guy
+        return same[num_words.index(max(num_words))]
+
+    def _get_num_words(self, frame: 'Frame') -> int:
+        """
+        A helper function which returns the number
+        of words in a frame
+        """
+        num_words = 0
+        for line in frame.lines:
+            num_words += len(line.words)
+        return num_words
+
+    def _get_max_words(self) -> int:
+        """
+        A helper function which returns the maximum
+        number of words that ever appear on the board
+        """
+        max_words = 0
+        for frame in self.frames:
+            words_in_frame = self._get_num_words(frame)
+
+            if words_in_frame > max_words:
+                max_words = words_in_frame
+
+        return max_words
+
+    def parse_diagram(self):
+        """Parses out diagrams from best frames"""
+        for i, frame in enumerate(self.relevant_frames):
+            image = cv2.imread(frame.picture_directory, 0)
+            image = cv2.fastNlMeansDenoising(image, 10, 10, 7, 21)
+            edges = cv2.Canny(image, 100, 200)
+
+            right = 0
+            left = edges.shape[1]
+            top = edges.shape[0]
+            bottom = 0
+
+            for line in frame.lines:
+                bb = line.bounding_box
+                if bb[1] < top:
+                    top = bb[1]
+                if bb[1] + bb[3] > bottom:
+                    bottom = bb[1] + bb[3]
+                if bb[0] < left:
+                    left = bb[0]
+                if bb[0] + bb[2] > right:
+                    right = bb[0] + bb[2]
+                edges[bb[1]:bb[1] + bb[3], bb[0]:bb[0] + bb[2]] = 0
+
+            edges[:, :left] = 255
+            edges[:, right:] = 255
+            edges[bottom:, :] = 255
+            edges[:top, :] = 255
+
+            edges[top:bottom, left:right] = cv2.bitwise_not(edges[top:bottom, left:right])
+
+            image = edges[top:bottom, left:right]
+
+            cv2.imwrite(self.name + "Processedframe%d.jpg" % i, image)
+
+            frame.diagram = Diagram(self.name + "Processedframe%d.jpg" % i, [top, left, right - left, bottom - top])
+
+    def _make_bounding_box(self, coordinates: tuple()) -> tuple():
+        """Helper function to calculate bounding box coordinates
+
+        return format (x,y,width,height)
+        """
+        return coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[5] - coordinates[1]
+
+    def find_first_occurance(self, keyword: Word) -> 'Frame':
+        """
+        Return the first frame which contains this Line object
+
+        Return None if this Line object is not in any frames
+        """
+        # loop through every frame
+        for frame in self.frames:
+            # calculate this current frame's keywords
+            # check if this keyword is also a member of this
+            # iterated frame's keyword
+            for line in frame.lines:
+                if keyword.text in line.text:
+                    return frame
+
+    # 460, 260
+    def compile_stats(self) -> dict():
+        data = {'initurl': 'https://www.youtube.com/embed/' + self.link.split('/')[-1],
+                'frame_one': {'keywords': []},
+                'frame_two': {'keywords': []},
+                'frame_three': {'keywords': []}}
+
+        # Frame 1
+        frame_one = self.relevant_frames[0]
+        frame_one.mark_keywords()
+        frame_keywords = frame_one.keywords
+
+        frame_one.filter_keywords_from_lines()
+
+        for keyword in frame_keywords:
+            k_data = {'testkeyword': True, 'name': keyword.text,
+                      'key_url': 'https://www.youtube.com/embed/' + self.link.split('/')[-1]
+                                 + '?start=' + str(self.find_first_occurance(keyword).time_stamp.to_secs())
+                                 + '&autoplay=1',
+                      'key_context_url': 'https://en.wikipedia.org/wiki/' + keyword.text,
+                      'key_fs': 15,
+                      'key_x': int(keyword.bounding_box[0] * (460 / 1280)),
+                      'key_y': int(keyword.bounding_box[1] * (260 / 720))}
+
+            data['frame_one']['keywords'].append(k_data)
+
+        for line in frame_one.lines:
+            k_data = {'testkeyword': False, 'name': line.text,
+                      'key_fs': 15,
+                      'key_x': int(line.bounding_box[0] * (460 / 1280)),
+                      'key_y': int(line.bounding_box[1] * (260 / 720))}
+
+            data['frame_one']['keywords'].append(k_data)
+
+        data['frame_one']['keywords'].reverse()
+
+        # Frame 2
+        frame_one = self.relevant_frames[1]
+        frame_one.mark_keywords()
+        frame_keywords = frame_one.keywords
+
+        frame_one.filter_keywords_from_lines()
+
+        for keyword in frame_keywords:
+            k_data = {'testkeyword': True, 'name': keyword.text,
+                      'key_url': 'https://www.youtube.com/embed/' + self.link.split('/')[-1]
+                                 + '?start=' + str(self.find_first_occurance(keyword).time_stamp.to_secs())
+                                 + '&autoplay=1',
+                      'key_context_url': 'https://en.wikipedia.org/wiki/' + keyword.text,
+                      'key_fs': 15,
+                      'key_x': int(keyword.bounding_box[0] * (460 / 1280)),
+                      'key_y': int(keyword.bounding_box[1] * (260 / 720))}
+
+            data['frame_two']['keywords'].append(k_data)
+
+        for line in frame_one.lines:
+            k_data = {'testkeyword': False, 'name': line.text,
+                      'key_fs': 15,
+                      'key_x': int(line.bounding_box[0] * (460 / 1280)),
+                      'key_y': int(line.bounding_box[1] * (260 / 720))}
+
+            data['frame_two']['keywords'].append(k_data)
+
+        data['frame_two']['keywords'].reverse()
+
+        # Frame 3
+        frame_one = self.relevant_frames[2]
+        frame_one.mark_keywords()
+        frame_keywords = frame_one.keywords
+
+        frame_one.filter_keywords_from_lines()
+
+        for keyword in frame_keywords:
+            k_data = {'testkeyword': True, 'name': keyword.text,
+                      'key_url': 'https://www.youtube.com/embed/' + self.link.split('/')[-1]
+                                 + '?start=' + str(self.find_first_occurance(keyword).time_stamp.to_secs())
+                                 + '&autoplay=1',
+                      'key_context_url': 'https://en.wikipedia.org/wiki/' + keyword.text,
+                      'key_fs': 15,
+                      'key_x': int(keyword.bounding_box[0] * (460 / 1280)),
+                      'key_y': int(keyword.bounding_box[1] * (260 / 720))}
+
+            data['frame_three']['keywords'].append(k_data)
+
+        for line in frame_one.lines:
+            k_data = {'testkeyword': False, 'name': line.text,
+                      'key_fs': 15,
+                      'key_x': int(line.bounding_box[0] * (460 / 1280)),
+                      'key_y': int(line.bounding_box[1] * (260 / 720))}
+
+            data['frame_three']['keywords'].append(k_data)
+
+        data['frame_three']['keywords'].reverse()
+
+        for frame in self.relevant_frames:
+            frame.keywords = []
+
+        return data

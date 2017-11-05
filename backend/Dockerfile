@@ -15,4 +15,6 @@ RUN python3.6 get-pip.py
 # Install requirements
 RUN pip3.6 -r requirements.txt
 
-# //TODO: Run server
+WORKDIR /backend/server
+
+CMD python3.6 server.py
