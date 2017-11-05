@@ -141,6 +141,6 @@ class Frame:
 
         for line in self.lines:
             for keyword in self.keywords:
-                line.text = line.text.replace(keyword.text, "")
+                line.text = line.text.replace(keyword.text, " "*len(keyword.text))
 
 
