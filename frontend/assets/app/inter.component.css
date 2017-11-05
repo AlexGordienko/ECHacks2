@@ -1,0 +1,55 @@
+@keyframes flickerAnimation {
+    0%   { opacity:1; }
+    50%  { opacity:0; }
+    100% { opacity:1; }
+}
+@-o-keyframes flickerAnimation{
+    0%   { opacity:1; }
+    50%  { opacity:0; }
+    100% { opacity:1; }
+}
+@-moz-keyframes flickerAnimation{
+    0%   { opacity:1; }
+    50%  { opacity:0; }
+    100% { opacity:1; }
+}
+@-webkit-keyframes flickerAnimation{
+    0%   { opacity:1; }
+    50%  { opacity:0; }
+    100% { opacity:1; }
+}
+.animate-flicker {
+    -webkit-animation: flickerAnimation 3s infinite;
+    -moz-animation: flickerAnimation 3s infinite;
+    -o-animation: flickerAnimation 3s infinite;
+    animation: flickerAnimation 3s infinite;
+}
+.material-btn__caret {
+    margin-left: 5px;
+}
+.material-btn {
+    background-color: #eee;
+    color: #000;
+    border-color: #eee;
+}
+.material-btn:focus,
+.material-btn:active {
+    background-color: #c9c9c9;
+    border-color: #c9c9c9;
+}
+.material-btn_primary {
+    background-color: #4092d9;
+    border-color: #4092d9;
+    color: #fff;
+}
+.material-btn_primary:hover {
+    color: #fff;
+    background-color: #64b2f5;
+    border-color: #64b2f5;
+}
+.material-btn_primary:focus,
+.material-btn_primary:active {
+    background-color: #3488d1;
+    border-color: #3488d1;
+    color: #fff;
+}

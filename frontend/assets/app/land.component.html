@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=yes, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>AutoNote</title>
+    <script
+            src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
+            crossorigin="anonymous">
+
+    </script>
+    <link rel="stylesheet" href="./animate.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="./analyze.component.css">
+    <link rel="stylesheet" href="./land.component.css">
+
+
+
+</head>
+<body>
+<nav class="navbar material-navbar material-navbar_primary">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <div class="navbar-brand material-navbar__brand">
+                AutoNote
+            </div>
+        </div>
+
+    </div>
+</nav>
+
+<p class="animated fadeIn first animate-flicker" style="text-align: center; font-size: 60px; color: #595959; margin-top: 100px">Welcome</p>
+<p class="animated fadeIn second animate-flicker2" style="text-align: center; font-size: 30px; color: #595959; margin-top: 20px">Please link the video you would like to transcribe.</p>
+
+<form class="container" #userForm="ngForm" (ngSubmit)="onSubmit(userForm.value)">
+
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6 animated fadeIn third animate-flicker3">
+            <div class="main-container__column" style="margin-top: 30px; width: 100%">
+                <div class="form-group materail-input-block materail-input-block_primary materail-input_slide-line">
+                    <input name="link" class="form-control materail-input" placeholder="" style="text-align: center" [(ngModel)]="vidForm.video">
+                    <span class="materail-input-block__line"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+    <div class="subbutton animated fadeIn animate-flicker3" style="text-align: center">
+        <a routerLink="/inter"><button type="submit" value="submit" class="btn material-btn material-btn_primary main-container__column" >Analyze</button></a>
+    </div>
+</form>
+
+</body>
+
+
+</html>
