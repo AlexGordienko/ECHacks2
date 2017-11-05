@@ -173,7 +173,7 @@ class Video:
         new_max_frames = []
         for i in range(1, len(max_frames)):
             frame = max_frames[i]
-            if frame.frame_num <= first.frame_num + 1000 and i != len(max_frames)-1:
+            if frame.frame_num <= first.frame_num + 1500 and i != len(max_frames)-1:
                 same.append(frame)
 
             else:
