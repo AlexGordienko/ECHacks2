@@ -149,7 +149,6 @@ class Video:
 
             frame.diagram = Diagram(self.name + "Processedframe%d.jpg" % i, [top, left, right - left, bottom - top])
 
-
     def _make_bounding_box(self, coordinates: tuple()) -> tuple():
         """Helper function to calculate bounding box coordinates
 

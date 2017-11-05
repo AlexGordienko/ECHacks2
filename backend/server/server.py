@@ -5,6 +5,7 @@ app = Flask(__name__)
 
 videos = {}
 
+
 @app.route('/new-video/<path:url>/<string:name>')
 def new_video(url: str, name: str) -> str:
     t = threading.Thread(target=process_video, args=(url, name))

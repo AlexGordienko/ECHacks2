@@ -63,6 +63,8 @@ class Frame:
 
         stats = json.loads(r.text)
 
+        print(r.text + ",")
+
         result = stats['recognitionResult']
         lines = result['lines']
         for line in lines:
@@ -82,45 +84,45 @@ class Frame:
 
         return coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[5] - coordinates[1]
 
-    def crop_frame(self):
-        """
-        Create a box around the board of this frame.
-        We do this by finding the word that is the most to the top-left,
-        and finding the word that is most to the bottom right,
-        and drawing a rectangle with everything inbetween these words
-
-        """
-
-        # open the image and get it's dimensions
-        img = Image.open(self.picture_directory)
-        img_dimensions = img.size  # return value is a tuple, ex.: (1200, 800)
-
-        # initialize topleft to origin,
-        # botright to the bot right corner
-        topleft_x = 0
-        topleft_y = 0
-        botright_x = img_dimensions[0]
-        botright_y = img_dimensions[1]
-
-        # the bottom right sum, we're looking for the greatest x,y sum
-        # top left sum, we're looking for the smallest
-        botright_sum = 0
-        topleft_sum = 99999
-
-        for line in self.lines:
-            for word in line.words:
-                word_x, word_y = word.bounding_box[0], word.bounding_box[1]
-
-                if word_x + word_y < topleft_sum:
-                    topleft_x = word_x
-                    topleft_y = word_y
-                    topleft_sum = word_x + word_y
-
-                elif word_x + word_y > botright_sum:
-                    botright_x = word_x
-                    botright_y = word_y
-                    botright_sum = word_x + word_y
-
-        # crop this frame
-        img = img.crop(topleft_x, topleft_y, botright_x, botright_y)
+    # def crop_frame(self):
+    #     """
+    #     Create a box around the board of this frame.
+    #     We do this by finding the word that is the most to the top-left,
+    #     and finding the word that is most to the bottom right,
+    #     and drawing a rectangle with everything inbetween these words
+    #
+    #     """
+    #
+    #     # open the image and get it's dimensions
+    #     img = Image.open(self.picture_directory)
+    #     img_dimensions = img.size  # return value is a tuple, ex.: (1200, 800)
+    #
+    #     # initialize topleft to origin,
+    #     # botright to the bot right corner
+    #     topleft_x = 0
+    #     topleft_y = 0
+    #     botright_x = img_dimensions[0]
+    #     botright_y = img_dimensions[1]
+    #
+    #     # the bottom right sum, we're looking for the greatest x,y sum
+    #     # top left sum, we're looking for the smallest
+    #     botright_sum = 0
+    #     topleft_sum = 99999
+    #
+    #     for line in self.lines:
+    #         for word in line.words:
+    #             word_x, word_y = word.bounding_box[0], word.bounding_box[1]
+    #
+    #             if word_x + word_y < topleft_sum:
+    #                 topleft_x = word_x
+    #                 topleft_y = word_y
+    #                 topleft_sum = word_x + word_y
+    #
+    #             elif word_x + word_y > botright_sum:
+    #                 botright_x = word_x
+    #                 botright_y = word_y
+    #                 botright_sum = word_x + word_y
+    #
+    #     # crop this frame
+    #     img = img.crop(topleft_x, topleft_y, botright_x, botright_y)
 
