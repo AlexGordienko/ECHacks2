@@ -23,11 +23,10 @@
 <body>
 
     <p class="animated fadeIn second animate-flicker" style="text-align: center; font-size: 30px; color: #595959; margin-top: 300px">processing..</p>
-
-    <div class="subbutton" style="text-align: center">
-        <a routerLink="/analyze"><button value="submit" class="btn material-btn material-btn_primary main-container__column" >View Results</button></a>
-    </div>
-        <div *ngIf="data">
+    <div *ngIf="results">
+        <div class="subbutton" style="text-align: center">
+            <a routerLink="/analyze"><button value="submit" class="btn material-btn material-btn_primary main-container__column" >View Results</button></a>
+        </div>
     </div>
 </body>
 </html>

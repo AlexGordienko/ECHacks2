@@ -59,20 +59,21 @@ export class AnalyzeComponent{
 
                 console.log(this.demo);
                 console.log(this.demo.initurl);
-
                 this.current_url=this.sanitizer.bypassSecurityTrustResourceUrl(this.initurl);
                 this.context_current_url=this.sanitizer.bypassSecurityTrustResourceUrl(this.blank_context_url);
 
+
             });
+
         //console.log(this.demo["initurl"]);
 
 
 
     }
 
-    // updateSrc(url) {
-    //     this.current_url=this.sanitizer.bypassSecurityTrustResourceUrl(url)
-    // }
+    updateSrc(url) {
+        this.current_url=this.sanitizer.bypassSecurityTrustResourceUrl(url)
+    }
 
     updateContext(url) {
         this.context_current_url=this.sanitizer.bypassSecurityTrustResourceUrl(url)
