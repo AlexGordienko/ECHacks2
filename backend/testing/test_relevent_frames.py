@@ -27,8 +27,8 @@ class TestReleventFrames(unittest.TestCase):
         #new_vid.parse_diagram()
 
     def test_stats(self):
-        new_vid = Video("https://youtu.be/2ceKYagf2h0", "lecture1")
-        new_vid.directory = "./test_vid_4.mp4"
+        new_vid = Video("https://youtu.be/REnQ_gIh3Xo", "lecture1")
+        new_vid.directory = "./test_vid_5.mp4"
         new_vid.fps = 30
 
         new_vid.parse_frames_without_saving()

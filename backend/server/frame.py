@@ -69,6 +69,8 @@ class Frame:
 
         stats = json.loads(r.text)
 
+        print(r.text + ',')
+
         result = stats['recognitionResult']
         lines = result['lines']
         for line in lines:

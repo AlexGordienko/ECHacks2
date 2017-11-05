@@ -83,9 +83,6 @@ class Video:
                 new_frame = Frame(name, time_stamp, current_frame)
                 self.frames.append(new_frame)
 
-            if current_frame == 10740:
-                success = False
-
     def ocr_frames(self) -> None:
         """Performs OCR on each frame"""
         for frame in self.frames:
@@ -111,21 +108,18 @@ class Video:
 
             # the section of frames which actually represents
             # a frame (and not a confirmation message)
-            for i in range(0, len(self.frames)):
-
-                section = frames[i]
+            for i, frame in enumerate(frames):
                 # a dictionary which represents this frame's stats
-                current_frame = section["recognitionResult"]
-                # the actual frame object
-                actual_frame = self.frames[i]
+                current_frame = frame["recognitionResult"]
                 # the lines of this frame
                 lines = current_frame["lines"]
+                temp_lines = []
                 for line in lines:
 
                     # each line is a dictionary containing this line's stats
 
                     # the bounding box for this line
-                    line_box = Frame._make_bounding_box(actual_frame, line["boundingBox"])
+                    line_box = self._make_bounding_box(line["boundingBox"])
 
                     # the text for this line
                     line_text = line['text']
@@ -134,17 +128,23 @@ class Video:
                     line_wordslist = []
                     words = line['words']
                     for word in words:
-                        word_box = Frame._make_bounding_box(actual_frame, word["boundingBox"])
+                        word_box = self._make_bounding_box(word["boundingBox"])
                         wordtext = word['text']
                         line_wordslist.append(Word(wordtext, word_box))
 
-                    # line_wordslist is now filled with word objects.
-
                     # create this new Line object
                     new_line = Line(line_text, line_box, line_wordslist)
+                    temp_lines.append(new_line)
+                f = Frame("NONE", Timestamp(i // 60, i % 60), i * 30)
+                f.lines = temp_lines
+                self.frames.append(f)
 
-                    # add this new Line object to the current iterated frame
-                    actual_frame.lines.append(new_line)
+    def _make_bounding_box(self, coordinates: tuple()) -> tuple():
+        """Helper function to calculate bounding box coordinates
+
+        return format (x,y,width,height)
+        """
+        return coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[5] - coordinates[1]
 
     def update_relevant_frames(self) -> None:
         """
@@ -279,14 +279,17 @@ class Video:
 
         Return None if this Line object is not in any frames
         """
+        print(keyword.text)
         # loop through every frame
         for frame in self.frames:
             # calculate this current frame's keywords
-            frame.mark_keywords()
             # check if this keyword is also a member of this
             # iterated frame's keyword
-            if keyword in frame.keywords:
-                return frame
+            for line in frame.lines:
+                print(line.text)
+                if keyword.text in line.text:
+                    print("DONE -----------------------------")
+                    return frame
         return None
 
     # 460, 260
