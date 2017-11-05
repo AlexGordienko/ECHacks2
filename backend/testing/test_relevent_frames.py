@@ -13,8 +13,8 @@ def test_relevant_frames():
     new_vid.parse_frames()
     new_vid.read_preloaded_frame_data()
     new_vid.update_relevant_frames()
-    for frame in new_vid.relevant_frames:
-        print(frame.picture_directory)
+
+    new_vid.parse_diagram()
 
 if __name__ == '__main__':
     unittest.main()
