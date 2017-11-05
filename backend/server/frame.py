@@ -129,8 +129,11 @@ class Frame:
                     # That is, the last word didn't end in a period
                     last_word = line.words[i-1]
                     if last_word.text[-1] != '.':
-                        self.keywords.append(word)
+                        if word.text not in {"The", "In", "And"}:
+                            self.keywords.append(word)
 
+            if line.words[0].text not in {"The", "In", "And", "How", "Why", "of", "non"}:
+                self.keywords.append(line.words[0])
         # Analyze consequetive keywords (go backwards)
         for i in range(len(self.keywords)-1, 0, -1):
             word1 = self.keywords[i]

@@ -10,7 +10,6 @@ def test_keywords():
     new_vid.directory = "./test_vid_5.mp4"
     new_vid.fps = 30
 
-    new_vid.parse_frames_without_saving()
     new_vid.read_preloaded_frame_data()
     new_vid.update_relevant_frames()
 
