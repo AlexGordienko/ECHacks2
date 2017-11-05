@@ -279,18 +279,14 @@ class Video:
 
         Return None if this Line object is not in any frames
         """
-        print(keyword.text)
         # loop through every frame
         for frame in self.frames:
             # calculate this current frame's keywords
             # check if this keyword is also a member of this
             # iterated frame's keyword
             for line in frame.lines:
-                print(line.text)
                 if keyword.text in line.text:
-                    print("DONE -----------------------------")
                     return frame
-        return None
 
     # 460, 260
     def compile_stats(self) -> dict():

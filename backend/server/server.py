@@ -31,19 +31,20 @@ def process_video(url, name) -> None:
     video.parse_frames()
     video.ocr_frames()
     video.update_relevant_frames()
-    video.parse_diagram()
+    print("Done")
 
 
 def load_from_cache() -> None:
-    new_vid = Video("https://youtu.be/2ceKYagf2h0", "lecture1")
-    new_vid.directory = "./test_vid_4.mp4"
+    new_vid = Video("https://youtu.be/REnQ_gIh3Xo", "lecture1")
+    new_vid.directory = "./test_vid_5.mp4"
     new_vid.fps = 30
 
-    new_vid.parse_frames_without_saving()
     new_vid.read_preloaded_frame_data()
     new_vid.update_relevant_frames()
 
     videos['lecture1'] = new_vid
+
+    print(new_vid.compile_stats())
 
 
 if __name__ == '__main__':
