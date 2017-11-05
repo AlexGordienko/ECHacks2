@@ -5,6 +5,7 @@ from backend.server.frame import Frame
 from backend.server.word import Word
 from backend.server.line import Line
 import json
+from typing import List
 
 class Video:
     """ Represents a uploaded youtube video
@@ -27,6 +28,7 @@ class Video:
         self.frames = []
         self.name = name
         self.fps = -1
+        self.relevant_frames = []
 
     def download(self) -> None:
         """Downloads a youtube video to the drive"""
@@ -57,9 +59,9 @@ class Video:
                 name = self.name + "frame%d.jpg" % current_frame
                 secs = current_frame // self.fps
                 time_stamp = Timestamp(secs // 60, secs % 60)
-                new_frame = Frame(name, time_stamp)
+                new_frame = Frame(name, time_stamp, current_frame)
                 self.frames.append(new_frame)
-                if current_frame > 3000:
+                if current_frame > 5400:
                     success = False
 
     def ocr_frames(self) -> None:
@@ -151,6 +153,98 @@ class Video:
             start += 1
             end += 1
 
+    def update_relevant_frames_2(self) -> None:
+        """
+        Method which selects frames that represent a full chalkboard,
+        and populates the relevant_frames list with these frames
+
+        """
+
+        # Analyze each frame and store the frame with the most words.
+        # While you're analyzing, check if this current frame has
+        # less than half the words of the max frame. If it does, that
+        # means at this stage, we can assume the board is being erased.
+        # And so, we select the previous maximum frame as a relevant frame.
+
+        max_words = -1
+        max_frame = None
+
+        for i in range(0, len(self.frames)):
+            if i >= 840:
+                frame = self.frames[i]
+                words_in_frame = self._get_num_words(frame)
+
+                if words_in_frame > max_words:
+                    max_words = words_in_frame
+                    max_frame = frame
+
+                # current iterated frame has half the words
+                # of the max frame, so we count the last
+                # max frame as relevent, and restart
+                elif max_words // 2 > words_in_frame:
+                    self.relevant_frames.append(max_frame)
+                    max_words = -1
+                    max_frame = None
+
+    def update_relevant_frames_3(self) -> None:
+        """
+        Method which selects frames that represent a full chalkboard,
+        and populates the relevant_frames list with these frames
+        """
+
+        # First, get the maximum amount of words that ever occur on
+        # the board
+        max_words_on_board = self._get_max_words()
+
+        max_frames = []
+        # Store all the frames which contain this number within
+        # minus 2 words
+        for frame in self.frames:
+            words_in_frame = self._get_num_words(frame)
+            if words_in_frame >= max_words_on_board - 3:
+                max_frames.append(frame)
+
+        max_frames = self._remove_repeats(max_frames)
+        self.relevant_frames.extend(max_frames)
+
+    def _remove_repeats(self, max_frames: List['Frame']):
+        """
+        Remove the frames which come close together to each other
+        If there are a lot who are close together to each other,
+        pick the one that has the most number of words.
+        """
+
+        first = max_frames[0]
+        same = [first]
+        new_max_frames = []
+        for i in range(1, len(max_frames)):
+            frame = max_frames[i]
+            if frame.frame_num <= first.frame_num + 1000 and i != len(max_frames)-1:
+                same.append(frame)
+
+            else:
+                # if same is not empty, then we JUST reached a guy
+                # who isn't part of this interval of same frames.
+                if len(same) != 0:
+                    # choose the element in same who has the most words,
+                    # and add him to the new_max_frames list.
+                    # afterwards, reset same and first for this new guy
+                    new_max_frames.append(self._choose_best_in_same(same))
+                    first = frame
+                    same = [first]
+
+        return new_max_frames
+
+    def _choose_best_in_same(self, same: list):
+
+        # create a parallel list of each element in same's number of words
+        num_words = []
+        for frame in same:
+            num_words.append(self._get_num_words(frame))
+
+        # return the first maximum number of words guy
+        return same[num_words.index(max(num_words))]
+
     def _get_num_words(self, frame: 'Frame') -> int:
         """
         A helper function which returns the number
@@ -158,9 +252,22 @@ class Video:
         """
         num_words = 0
         for line in frame.lines:
-            for _ in line.words:
-                num_words += 1
+            num_words += len(line.words)
         return num_words
+
+    def _get_max_words(self) -> int:
+        """
+        A helper function which returns the maximum
+        number of words that ever appear on the board
+        """
+        max_words = 0
+        for frame in self.frames:
+            words_in_frame = self._get_num_words(frame)
+
+            if words_in_frame > max_words:
+                max_words = words_in_frame
+
+        return max_words
 
     def parse_diagram(self):
         """Parses out diagrams from best frames"""

@@ -17,12 +17,14 @@ class Frame:
     time_stamp: 'Timestamp'
     lines: List['Line']
     return_url: str
+    frame_num: int
 
-    def __init__(self, picture_directory: str, time_stamp: 'Timestamp') -> None:
+    def __init__(self, picture_directory: str, time_stamp: 'Timestamp', frame_num: int) -> None:
         self.picture_directory = picture_directory
         self.time_stamp = time_stamp
         self.lines = []
         self.return_url = ''
+        self.frame_num = frame_num
 
     def get_ocr_prediction(self) -> None:
         """Gets the OCR prediction of the frame from Microsoft
