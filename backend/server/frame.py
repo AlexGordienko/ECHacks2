@@ -69,8 +69,6 @@ class Frame:
 
         stats = json.loads(r.text)
 
-        print(r.text + ',')
-
         result = stats['recognitionResult']
         lines = result['lines']
         for line in lines:
@@ -161,6 +159,6 @@ class Frame:
 
         for line in self.lines:
             for keyword in self.keywords:
-                line.text = line.text.replace(keyword.text, " "*len(keyword.text))
+                line.text = line.text.replace(keyword.text, "_"*len(keyword.text))
 
 

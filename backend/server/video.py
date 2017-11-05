@@ -308,7 +308,7 @@ class Video:
                                  + '?start=' + str(self.find_first_occurance(keyword).time_stamp.to_secs())
                                  + '&autoplay=1',
                       'key_context_url': 'https://en.wikipedia.org/wiki/' + keyword.text,
-                      'key_fs': 20,
+                      'key_fs': 15,
                       'key_x': int(keyword.bounding_box[0] * (460 / 1280)),
                       'key_y': int(keyword.bounding_box[1] * (260 / 720))}
 
@@ -316,11 +316,13 @@ class Video:
 
         for line in frame_one.lines:
             k_data = {'testkeyword': False, 'name': line.text,
-                      'key_fs': 20,
+                      'key_fs': 15,
                       'key_x': int(line.bounding_box[0] * (460 / 1280)),
                       'key_y': int(line.bounding_box[1] * (260 / 720))}
 
             data['frame_one']['keywords'].append(k_data)
+
+        data['frame_one']['keywords'].reverse()
 
         # Frame 2
         frame_one = self.relevant_frames[1]
@@ -335,7 +337,7 @@ class Video:
                                  + '?start=' + str(self.find_first_occurance(keyword).time_stamp.to_secs())
                                  + '&autoplay=1',
                       'key_context_url': 'https://en.wikipedia.org/wiki/' + keyword.text,
-                      'key_fs': 20,
+                      'key_fs': 15,
                       'key_x': int(keyword.bounding_box[0] * (460 / 1280)),
                       'key_y': int(keyword.bounding_box[1] * (260 / 720))}
 
@@ -343,11 +345,13 @@ class Video:
 
         for line in frame_one.lines:
             k_data = {'testkeyword': False, 'name': line.text,
-                      'key_fs': 20,
+                      'key_fs': 15,
                       'key_x': int(line.bounding_box[0] * (460 / 1280)),
                       'key_y': int(line.bounding_box[1] * (260 / 720))}
 
             data['frame_two']['keywords'].append(k_data)
+
+        data['frame_two']['keywords'].reverse()
 
         # Frame 3
         frame_one = self.relevant_frames[2]
@@ -362,7 +366,7 @@ class Video:
                                  + '?start=' + str(self.find_first_occurance(keyword).time_stamp.to_secs())
                                  + '&autoplay=1',
                       'key_context_url': 'https://en.wikipedia.org/wiki/' + keyword.text,
-                      'key_fs': 20,
+                      'key_fs': 15,
                       'key_x': int(keyword.bounding_box[0] * (460 / 1280)),
                       'key_y': int(keyword.bounding_box[1] * (260 / 720))}
 
@@ -370,11 +374,13 @@ class Video:
 
         for line in frame_one.lines:
             k_data = {'testkeyword': False, 'name': line.text,
-                      'key_fs': 20,
+                      'key_fs': 15,
                       'key_x': int(line.bounding_box[0] * (460 / 1280)),
                       'key_y': int(line.bounding_box[1] * (260 / 720))}
 
             data['frame_three']['keywords'].append(k_data)
+
+        data['frame_three']['keywords'].reverse()
 
         for frame in self.relevant_frames:
             frame.keywords = []
