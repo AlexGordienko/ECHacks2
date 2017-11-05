@@ -20,13 +20,15 @@ class Frame:
     lines: List['Line']
     return_url: str
     diagram: 'Diagram'
+    frame_num: int
 
-    def __init__(self, picture_directory: str, time_stamp: 'Timestamp') -> None:
+    def __init__(self, picture_directory: str, time_stamp: 'Timestamp', frame_number: int) -> None:
         self.picture_directory = picture_directory
         self.time_stamp = time_stamp
         self.lines = []
         self.return_url = ''
         self.diagram = None
+        self.frame_num = frame_number
 
     def get_ocr_prediction(self) -> None:
         """Gets the OCR prediction of the frame from Microsoft
@@ -63,8 +65,6 @@ class Frame:
                          headers={'Ocp-Apim-Subscription-Key': api_key})
 
         stats = json.loads(r.text)
-
-        print(r.text + ",")
 
         result = stats['recognitionResult']
         lines = result['lines']
