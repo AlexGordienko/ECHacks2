@@ -89,7 +89,9 @@ class Frame:
                 wordtext = word['text']
                 # check if this word is actually a word. if not, try to fix it
                 if not d.check(wordtext):
-                    wordtext = d.suggest(wordtext)[0]
+                    suggestions = d.suggest(wordtext)
+                    if (len(suggestions) != 0):
+                        wordtext = suggestions[0]
 
                 line_wordslist.append(Word(wordtext, word_box))
 

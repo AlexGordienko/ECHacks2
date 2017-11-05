@@ -42,9 +42,11 @@ class Line:
         # if the current iterated word is NOT a word
         for i in range(0, len(words_in_line)):
             wordtext = words_in_line[i]
-            if not d.check(wordtext):
-                # try to fix it, and replace it
-                words_in_line[i] = d.suggest(wordtext)[0]
+            if not d.check(wordtext) and wordtext not in "!@#$%^&*()?":
+                # try to fix it, if you can, and replace it
+                suggestions = d.suggest(wordtext)
+                if len(suggestions) != 0:
+                    words_in_line[i] = d.suggest(wordtext)[0]
 
         # rebuild the text of the line
         new_line_text = ""
