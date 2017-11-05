@@ -236,7 +236,7 @@ class Video:
             bottom = 0
 
             for line in frame.lines:
-                bb = self._make_bounding_box(line['boundingBox'])
+                bb = line.bounding_box
                 if bb[1] < top:
                     top = bb[1]
                 if bb[1] + bb[3] > bottom:
@@ -274,9 +274,9 @@ class Video:
         Return None if this Line object is not in any frames
         """
 
-        first_frame = None
         for frame in self.frames:
             if line in frame.lines:
-                first_frame = frame
+                return frame
 
-        return first_frame
+        return None
+
