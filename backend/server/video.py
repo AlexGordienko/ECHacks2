@@ -6,7 +6,8 @@ from backend.server.word import Word
 from backend.server.line import Line
 from backend.server.diagram import Diagram
 import json
-from typing import List
+from typing import List, Dict
+
 
 class Video:
     """ Represents a uploaded youtube video
@@ -283,3 +284,89 @@ class Video:
                 return frame
         return None
 
+    # 460, 260
+    def compile_stats(self) -> dict():
+        data = {'frame_one': {'keywords': []}, 'frame_two': {'keywords': []}, 'frame_three': {'keywords':[]}}
+
+        # Frame 1
+        frame_one = self.relevant_frames[0]
+        frame_one.mark_keywords()
+        frame_keywords = frame_one.keywords
+
+        frame_one.filter_keywords_from_lines()
+
+        for keyword in frame_keywords:
+            k_data = {'testkeyword': True, 'name': keyword.text,
+                      'key_url': 'https://www.youtube.com/embed/' + self.link.split('/')[-1]
+                                 + '?start=' + str(self.find_first_occurance(keyword).time_stamp.to_secs())
+                                 + '&autoplay=1"',
+                      'key_context_url': 'https://en.wikipedia.org/wiki/' + keyword.text,
+                      'key_fs': 20,
+                      'key_x': int(keyword.bounding_box[0] * (460 / 1280)),
+                      'key_y': int(keyword.bounding_box[1] * (260 / 720))}
+
+            data['frame_one']['keywords'].append(k_data)
+
+        for line in frame_one.lines:
+            k_data = {'testkeyword': False, 'name': line.text,
+                      'key_fs': 20,
+                      'key_x': int(line.bounding_box[0] * (460 / 1280)),
+                      'key_y': int(line.bounding_box[1] * (260 / 720))}
+
+            data['frame_one']['keywords'].append(k_data)
+
+        # Frame 2
+        frame_one = self.relevant_frames[1]
+        frame_one.mark_keywords()
+        frame_keywords = frame_one.keywords
+
+        frame_one.filter_keywords_from_lines()
+
+        for keyword in frame_keywords:
+            k_data = {'testkeyword': True, 'name': keyword.text,
+                      'key_url': 'https://www.youtube.com/embed/' + self.link.split('/')[-1]
+                                 + '?start=' + str(self.find_first_occurance(keyword).time_stamp.to_secs())
+                                 + '&autoplay=1"',
+                      'key_context_url': 'https://en.wikipedia.org/wiki/' + keyword.text,
+                      'key_fs': 20,
+                      'key_x': int(keyword.bounding_box[0] * (460 / 1280)),
+                      'key_y': int(keyword.bounding_box[1] * (260 / 720))}
+
+            data['frame_two']['keywords'].append(k_data)
+
+        for line in frame_one.lines:
+            k_data = {'testkeyword': False, 'name': line.text,
+                      'key_fs': 20,
+                      'key_x': int(line.bounding_box[0] * (460 / 1280)),
+                      'key_y': int(line.bounding_box[1] * (260 / 720))}
+
+            data['frame_one']['keywords'].append(k_data)
+
+        # Frame 3
+        frame_one = self.relevant_frames[2]
+        frame_one.mark_keywords()
+        frame_keywords = frame_one.keywords
+
+        frame_one.filter_keywords_from_lines()
+
+        for keyword in frame_keywords:
+            k_data = {'testkeyword': True, 'name': keyword.text,
+                      'key_url': 'https://www.youtube.com/embed/' + self.link.split('/')[-1]
+                                 + '?start=' + str(self.find_first_occurance(keyword).time_stamp.to_secs())
+                                 + '&autoplay=1"',
+                      'key_context_url': 'https://en.wikipedia.org/wiki/' + keyword.text,
+                      'key_fs': 20,
+                      'key_x': int(keyword.bounding_box[0] * (460 / 1280)),
+                      'key_y': int(keyword.bounding_box[1] * (260 / 720))}
+
+            data['frame_three']['keywords'].append(k_data)
+
+        for line in frame_one.lines:
+            k_data = {'testkeyword': False, 'name': line.text,
+                      'key_fs': 20,
+                      'key_x': int(line.bounding_box[0] * (460 / 1280)),
+                      'key_y': int(line.bounding_box[1] * (260 / 720))}
+
+            data['frame_one']['keywords'].append(k_data)
+
+        return data
