@@ -132,7 +132,7 @@ class Frame:
                         if word.text not in {"The", "In", "And"}:
                             self.keywords.append(word)
 
-            if line.words[0].text not in {"The", "In", "And", "How", "Why", "of", "non"}:
+            if line.words[0].text not in {"The", "In", "And", "How", "Why", "of", "non", "a"}:
                 self.keywords.append(line.words[0])
         # Analyze consequetive keywords (go backwards)
         for i in range(len(self.keywords)-1, 0, -1):
